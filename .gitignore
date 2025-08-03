@@ -1,0 +1,8 @@
+# Ignore build artifacts
+build/
+dist/
+*.spec
+
+# Ignore Python cache
+__pycache__/
+*.py[cod]
