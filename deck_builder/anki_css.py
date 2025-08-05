@@ -137,7 +137,7 @@ def custom_anagrams_css():
 
     .nightMode .anagrams_3 {
     color: black;
-    background-color: #ffdbdb; /* pink */
+    background-color: #fff0f0; /* pink */
     border: 2px solid #e7a6af;
     padding: 8px;
     border-radius: 6px;
