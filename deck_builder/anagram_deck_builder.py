@@ -72,7 +72,6 @@ def build_card_data(db_conn, alphagram_list):
         tags.add(f"anagrams_{num_anagrams}")
 
         tags.add(f"vowels::{num_vowels}")
-        tags.add(f"len{length}::vowels::{num_vowels}")
 
         # Sort entries
         for row in sorted(rows, key=lambda r: r["probability_order1"] if length in (7, 8) else r["playability_order"]):
