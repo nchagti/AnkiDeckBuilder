@@ -145,7 +145,7 @@ def custom_anagrams_css():
     
     .nightMode .anagrams_4 {
     color: black;
-    background-color: #d8f7e8; /* green */
+    background-color: #e3fcf0; /* green */
     border: 2px solid #92d8ba;
     padding: 8px;
     border-radius: 6px;
@@ -177,7 +177,7 @@ def custom_anagrams_css():
 
     .nightMode .anagrams_8 {
     color: black;
-    bbackground-color: #efefff; /* violet-gray */
+    background-color: #efefff; /* violet-gray */
     border: 2px solid #b2b0ca;
     padding: 8px;
     border-radius: 6px;
