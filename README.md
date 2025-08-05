@@ -4,7 +4,7 @@ Build study decks using Anki — the most flexible, customizable, and intelligen
 
 ## Why Anki?
 
-Anki combines the **best of the three major study tools** word game players already use:
+**Anki** combines the **best of the three major study tools** word game players already use:
 
 1. It has a **Desktop** & **Mobile** app like **Zyzzyva**, so you can keep studying offline.
 2. Like **Xerafin**, you can study on a web-based interface like AnkiWeb so you don't have to download an app—*and* Anki will automatically schedule what you have to study next so you don't have to keep manually adding new words to your cardbox every week. 
