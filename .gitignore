@@ -6,3 +6,6 @@ dist/
 # Ignore Python cache
 __pycache__/
 *.py[cod]
+
+# Ignore zip file
+Anki_Deck_Builder.zip
