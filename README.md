@@ -99,7 +99,7 @@ It's pretty simple to create your own deck. To create the deck from the example 
 
 9. Repeat steps 6-8 to create a subdeck for your JQXZ words. In the search bar, use the query `deck:<YourMainDeckName> tag:len*::jqxz` to find all JQXZ words of all lengths. Move them to your second subdeck.
 
-10. Repeat steps 6-8 to create a third subdeck for all other words in your deck. In the search bar, use the query `deck:<YourMainDeckName> -tag:len7::prob::1-500 AND -tag:len7::prob::501-1000 AND -tag:len8::prob::1-500 AND -tag:len8::prob::501-1000 AND -tag:len*::jqxz`. Move all of these words to your third subdeck.
+10. Repeat steps 6-8 to create a third subdeck for all other words in your deck. In the search bar, use the query `deck:<YourMainDeckName> -tag:len7::prob::1-500 -tag:len7::prob::501-1000 -tag:len8::prob::1-500 -tag:len8::prob::501-1000 -tag:len*::jqxz`. Move all of these words to your third subdeck.
 
 11. For each subdeck, change the daily new word limit and daily review limit, making sure that the limit for the bingos is greater than that for the JQXZ words, and the limit for the JQXZ words is greater than the limit for all other words in your third subdeck. This will ensure that you're seeing more high probability words than you see JQXZ words, and more JQXZ words than all other words.
 
