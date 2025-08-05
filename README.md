@@ -4,22 +4,22 @@ Build study decks using Anki — the most flexible, customizable, and intelligen
 
 ## Why Anki?
 
-Anki combines the **best of the three major study tools** word game players already use:
+**Anki** combines the **best of the three major study tools** word game players already use:
 
 1. It has a **Desktop** & **Mobile** app like **Zyzzyva**, so you can keep studying offline.
-2. Like **Xerafin**, you can study on a web-based interface like AnkiWeb so you don't have to download an app—__and__ Anki will automatically schedule what you have to study next so you don't have to keep manually adding new words to your cardbox every week. 
-3. Anki's **FSRS algorithm** was the original inspiration behind **WordVault** __and__ it has an optimizer that uses machine learning to learn your memory patterns and to find parameters that best fit your review history  
+2. Like **Xerafin**, you can study on a web-based interface like AnkiWeb so you don't have to download an app—*and* Anki will automatically schedule what you have to study next so you don't have to keep manually adding new words to your cardbox every week. 
+3. Anki's **FSRS algorithm** was the original inspiration behind **WordVault** *and* it has an optimizer that uses machine learning to learn your memory patterns and to find parameters that best fit your review history  
 
 If that's not enough, unlike other tools:
 * Anki lets you upload **100k+ questions** per deck.
-* Using the Anki Deck Builder, you can study **anagrams, leave values, __and__ definitions**.
+* Using the Anki Deck Builder, you can study **anagrams, leave values, *and* definitions**.
 * You **won't be penalized for missing a day or week of studying** — the FSRS reschedules your flashcards intelligently.
 
 ## Getting the most out of Anki
 
 ### 1. **Main Decks, Subdecks, and Filtering**
 
-Since the FSRS is best trained on a global context, it is a good idea to **create a Main Deck** with a __lot__ of questions and, within that Main Deck, **multiple subdecks** with different types of questions. 
+Since the FSRS is best trained on a global context, it is a good idea to **create a Main Deck** with a *lot* of questions and, within that Main Deck, **multiple subdecks** with different types of questions. 
 
 The Anki Deck Builder **automatically generates tags and fields** for each deck type, allowing you to filter questions using Anki's powerful search tool for targeted study.
 
@@ -28,15 +28,15 @@ The Anki Deck Builder **automatically generates tags and fields** for each deck 
         - **For example**, if you know you want to learn the top 1000 probability 7- and 8-letter bingos and JQXZ words, but you want to prioritize the bingos, then you can use the tags to create three subdecks within your Main Deck: one with the bingos, one with the JQXZ words, and one with all other words in your Main Deck.
     
 - **Fields by deck type**: Use these fields to search filter your decks
-   - __Anagrams Deck__: question, answer, length, number of anagrams, number of vowels, number of unique letters, point value, probability orders, playability orders, number of anagrams 
-   - __Leaves Deck__: leave, leave value, leave value range 
-   - __Definitions Deck__: word, definition 
+   - *Anagrams Deck*: question, answer, length, number of anagrams, number of vowels, number of unique letters, point value, probability orders, playability orders, number of anagrams 
+   - *Leaves Deck*: leave, leave value, leave value range 
+   - *Definitions Deck*: word, definition 
    
 
 - **Tags by deck type**: Use these fields to search and filter your decks
-   - __Anagrams Deck__: length, number of anagrams, number of vowels, probability order (individual), probabliity order (range), playability order (individual), playability order (range), part of speech, alternate spelling, contains jqxz 
-   - __Leaves Deck__: length, number of blanks, leave value range 
-   - __Definitions Deck__: part of speech, alternate spellings, inner hook 
+   - *Anagrams Deck*: length, number of anagrams, number of vowels, probability order (individual), probabliity order (range), playability order (individual), playability order (range), part of speech, alternate spelling, contains jqxz 
+   - *Leaves Deck*: length, number of blanks, leave value range 
+   - *Definitions Deck*: part of speech, alternate spellings, inner hook 
 
 ### 2. **Visual and Algorithmic Customizability**
 
@@ -74,7 +74,7 @@ Miss a day or a week of studying? No problem.
 ## How to Use the Deck Generator
 
 It's pretty simple to create your own deck. To create the deck from the example above, follow these steps: 
-1. Create a text file with all words you want to study. This will be the content of your Main Deck, so you should include __all__ the words you want to study. 
+1. Create a text file with all words you want to study. This will be the content of your Main Deck, so you should include *all* the words you want to study. 
 2. **For Windows**, download the zipped file from the latest Release and extract `Anki.Deck.Builder.exe` to an accessible location like your Downloads folder. 
 
    **For MacOS and Linux**, clone the repo and run `cli_make_deck.py`. 
