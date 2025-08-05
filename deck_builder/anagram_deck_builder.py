@@ -117,7 +117,7 @@ def build_card_data(db_conn, alphagram_list):
                 if alt_spellings:
                     tags.add("alternate_spellings")
 
-            # Tag by bucket
+            # Tag by indv prob + indv play + bucket
             if length in (4, 5, 6):
                 tags.add(f"len{length}::play::{play_order}")
                 play_bucket = (play_order - 1) // 500 * 500 + 1

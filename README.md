@@ -2,13 +2,20 @@
 
 Build study decks using Anki — the most flexible, customizable, and intelligent flashcarding tool available.
 
+## Table of Contents
+
+- [Why Anki?](#why-anki)
+- [Getting the Most Out of Anki](#getting-the-most-out-of-anki)
+- [How to Use the Anki Deck Builder](#how-to-use-the-anki-deck-builder)
+
+
 ## Why Anki?
 
 **Anki** combines the **best of the three major study tools** word game players already use:
 
 1. It has a **Desktop** & **Mobile** app like **Zyzzyva**, so you can keep studying offline.
-2. Like **Xerafin**, you can study on a web-based interface like AnkiWeb so you don't have to download an app—*and* Anki will automatically schedule what you have to study next so you don't have to keep manually adding new words to your cardbox every week. 
-3. Anki's **FSRS algorithm** was the original inspiration behind **WordVault** *and* it has an optimizer that uses machine learning to learn your memory patterns and to find parameters that best fit your review history  
+2. Like **Xerafin**, you can study on a **web-based interface** like AnkiWeb so you don't have to download an app—*and* Anki will **automatically schedule** what you have to study next so you don't have to manually add new words to your cardbox every week. 
+3. Anki's **FSRS algorithm** was the original inspiration behind **WordVault** *and* features an optimizer that uses machine learning to learn your memory patterns and to find parameters that best fit your review history  
 
 If that's not enough, unlike other tools:
 * Anki lets you upload **100k+ questions** per deck.
@@ -32,8 +39,7 @@ The Anki Deck Builder **automatically generates tags and fields** for each deck 
    - *Leaves Deck*: leave, leave value, leave value range 
    - *Definitions Deck*: word, definition 
    
-
-- **Tags by deck type**: Use these fields to search and filter your decks
+- **Tags by deck type**: Use these tags to search and filter your decks
    - *Anagrams Deck*: length, number of anagrams, number of vowels, probability order (individual), probabliity order (range), playability order (individual), playability order (range), part of speech, alternate spelling, contains jqxz 
    - *Leaves Deck*: length, number of blanks, leave value range 
    - *Definitions Deck*: part of speech, alternate spellings, inner hook 
@@ -50,32 +56,25 @@ Customize the **appearance**, **behavior** and **organization** of your study de
       - Leaves by the leave-value range, and
       - (soon) Definitions by part of speech
   
-  - The **Anki** app lets you easily **customize** fonts, colors, and highlights — no coding required!
+  - The Anki app lets you easily **customize fonts, colors, and highlights** — no coding required!
 
 * **Review Behavior**:
 
-  * With **Anki**, you can control how many words you want to study every day, just today, or by a particular deck 
-  * You can even set different schedules by the day of the week (e.g., fewer cards on weekends)!
+  * With Anki, you can **control how many words you want to study** every day, just today, or by a particular deck 
+  * You can even set **different schedules** by the day of the week (e.g., fewer cards on weekends)!
+  * You won't be penalized for missing a day or week of studying — the FSRS will **automatically reschedule** your due cards (though you can increase your limit for the day to work through them)
 
 * **Organization**:
   * Create your own tags and use the hierarchical tags (`category::subcategory`) to keep decks organized
   * Use subdecks to categorize *types* of questions and prioritize them as you see fit
   * Use flags to mark questions that you want to come back to later
 
-### 3. **Never Restart Your Cardbox Again**
 
-Miss a day or a week of studying? No problem.
+## How to Use the Anki Deck Builder
 
-* You’ll never be shown more new words than your set daily limit!
-* Just change your daily limit if you want to see more words
-* The FSRS algorithm will automatically adjust to your schedule — no manual rescheduling needed
-
-
-## How to Use the Deck Generator
-
-It's pretty simple to create your own deck. To create the deck from the example above, follow these steps: 
+It's pretty simple to create your own deck. To create [the deck from the example above](#1-main-decks-subdecks-and-filtering), follow these steps: 
 1. Create a text file with all words you want to study. This will be the content of your Main Deck, so you should include *all* the words you want to study. 
-2. **For Windows**, download the zipped file from the latest Release and extract `Anki.Deck.Builder.exe` to an accessible location like your Downloads folder. 
+2. **For Windows**, download the zipped file from the latest Release and extract `Anki_Deck_Builder.exe` to an accessible location like your Downloads folder. 
 
    **For MacOS and Linux**, clone the repo and run `cli_make_deck.py`. 
 
@@ -107,7 +106,7 @@ It's pretty simple to create your own deck. To create the deck from the example 
 
 13. Adding more questions to existing decks later? No problem.
 
-- Upload another file using the **same Deck name** to append words to an existing deck.
+    Just import another `.apkg` file using the **same Deck name** to append words to an existing deck.
 
 
 ## Importing your Cardbox from Zyzzyva/Xerafin
