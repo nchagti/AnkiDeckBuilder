@@ -64,17 +64,37 @@ def build_card_data(db_conn, alphagram_list):
         point_value = first["point_value"]
         num_unique_letters = first["num_unique_letters"]
 
-        if any(c in alphagram for c in 'JQXZ'):
-            tags.add(f"len{length}::jqxz")
+        tags.add(f"anagrams_{num_anagrams}")
 
         tags.add(f"len{length}")
 
-        tags.add(f"anagrams_{num_anagrams}")
+        if any(c in alphagram for c in 'JQXZ'):
+            tags.add(f"len{length}::jqxz")
 
-        tags.add(f"vowels::{num_vowels}")
+        if (length == 7 and num_vowels >= 4):
+            tags.add("len7::vowels::4plus")
+            tags.add("vowel_dump")
+        elif (length == 8 and num_vowels >= 5):
+            tags.add("len8::vowels::5plus")
+            tags.add("vowel_dump")
+        elif (length == 4 and num_vowels >= 3):
+            tags.add("len4::vowels::3plus")
+            tags.append("vowel_dump")
+        elif (length == 5 and num_vowels >= 4):
+            tags.add("len5::vowels::4plus")
+            tags.add("vowel_dump")
+
+        if num_vowels == 0:
+            if 4 <= length <= 8:
+                tags.add("consonant_dump")
+        elif num_vowels == 1:
+            if 5 <= length <= 8:
+                tags.add("consonant_dump")
+
+        tags.add(f"len{length}::vowels::{num_vowels}")
 
         # Sort entries
-        for row in sorted(rows, key=lambda r: r["probability_order1"] if length in (7, 8) else r["playability_order"]):
+        for row in sorted(rows, key=lambda r: r["probability_order1"] if length in (7, 8, 9) else r["playability_order"]):
             word = row["word"]
             play_order = row["playability_order"]
             prob_order = row["probability_order1"]
@@ -122,7 +142,7 @@ def build_card_data(db_conn, alphagram_list):
                 tags.add(f"len{length}::play::{play_order}")
                 play_bucket = (play_order - 1) // 500 * 500 + 1
                 tags.add(f"len{length}::play::{play_bucket}-{play_bucket + 499}")
-            elif length in (7, 8):
+            elif length in (7, 8, 9):
                 tags.add(f"len{length}::prob::{prob_order}")
                 prob_bucket = (prob_order - 1) // 500 * 500 + 1
                 tags.add(f"len{length}::prob::{prob_bucket}-{prob_bucket + 499}")
