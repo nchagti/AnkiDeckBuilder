@@ -79,7 +79,7 @@ def build_card_data(db_conn, alphagram_list):
             tags.add("vowel_dump")
         elif (length == 4 and num_vowels >= 3):
             tags.add("len4::vowels::3plus")
-            tags.append("vowel_dump")
+            tags.add("vowel_dump")
         elif (length == 5 and num_vowels >= 4):
             tags.add("len5::vowels::4plus")
             tags.add("vowel_dump")
