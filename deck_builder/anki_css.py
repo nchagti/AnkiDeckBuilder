@@ -12,10 +12,10 @@ def default_anagrams_css():
     display: grid;
     grid-template-columns: minmax(3ch, max-content) 
                             minmax(3ch, max-content) 
-                            minmax(8ch, max-content) 
+                            minmax(4ch, max-content) 
                             minmax(3ch, max-content) 
                             1fr;
-    gap: 0.5em;
+    gap: 0.3em;
     margin-bottom: 1em;
     width: 100%;
     }
@@ -24,9 +24,23 @@ def default_anagrams_css():
     display: contents;
     }
 
-    .col {
+    .col.order {
+    text-align: center;
+    }
+
+    .col.front {
+    text-align: right;
     white-space: pre-wrap;
+    }
+
+    .col.anagram {
+    text-align: center;
+    white-space: pre-wrap;
+    }
+
+    .col.back {
     text-align: left;
+    white-space: pre-wrap;
     }
 
     .col.definition {
