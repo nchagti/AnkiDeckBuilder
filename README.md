@@ -74,9 +74,11 @@ Customize the **appearance**, **behavior** and **organization** of your study de
 
 It's pretty simple to create your own deck. To create [the deck from the example above](#1-main-decks-subdecks-and-filtering), follow these steps: 
 1. Create a text file with all words you want to study. This will be the content of your Main Deck, so you should include *all* the words you want to study. 
-2. **For Windows**, download the zipped file from the latest Release and extract `Anki_Deck_Builder.exe` to an accessible location like your Downloads folder. 
-
-   **For MacOS and Linux**, clone the repo and run `cli_make_deck.py`. 
+2. Run the Anki Deck Builder
+    - **For Windows**, download the zipped file from the latest Release and extract the folder `Anki_Deck_Builder` to an accessible location (like your Downloads folder). From the `Anki_Deck_Builder` folder, run `Anki_Deck_Builder.exe`.
+      > Make sure to **extract the entire `Anki_Deck_Builder` folder.** The `.exe` will not work without the `_internal` folder (found in `Anki_Deck_Builder`). 
+  
+     - **For MacOS and Linux**, clone the repo and run `cli_make_deck.py`. 
 
 3. Upload your `.txt` file with with one alphagram or word per line and your lexicon database (`.db`) file. 
 
@@ -90,17 +92,19 @@ It's pretty simple to create your own deck. To create [the deck from the example
         
 5. Open **Anki**, click `Import File`, and choose the deck (`.apkg`) that you just generated. 
 
-6. **After** importing your deck, click `Create Deck`. Name this deck `<YourMainDeckName>::<FirstSubdeckName>`. This will create an empty subdeck for your Main Deck. 
+6. **After** importing your Main Deck, click `Create Deck`. Name this deck `<YourMainDeckName>::<FirstSubdeckName>`. This will create an empty subdeck for your Main Deck. 
 
 7. Select your Main deck and click on Browse. In the search field, use the tags or fields to start filtering your deck. In this case, use the following search: `deck:<YourMainDeckName> tag:len7::prob::1-500 OR tag:len7::prob::501-1000 OR tag:len8::prob::1-500 OR tag:len8::prob::501-1000`
 
 8. Select all questions (`Ctrl + A` on Windows or `Cmd + A` on MacOS), right click on the questions, and click `Change Deck`. Choose the subdeck that you just created to move all top 1000 probable 7 and 8-letter words into it.
 
-9. Repeat steps 6-8 to create a subdeck for your JQXZ words. In the search bar, use the query `deck:<YourMainDeckName> tag:len*::jqxz` to find all JQXZ words of all lengths. Move them to your second subdeck.
+9. Repeat steps 6-8 to create a **separate** subdeck for your JQXZ words. In the search bar, use the query `deck:<YourMainDeckName> tag:len*::jqxz` to find all JQXZ words of all lengths. Move them to your second subdeck.
 
-10. Repeat steps 6-8 to create a third subdeck for all other words in your deck. In the search bar, use the query `deck:<YourMainDeckName> -tag:len7::prob::1-500 -tag:len7::prob::501-1000 -tag:len8::prob::1-500 -tag:len8::prob::501-1000 -tag:len*::jqxz`. Move all of these words to your third subdeck.
+10. Repeat steps 6-8 to create a third, **separate** subdeck for all other words in your deck. In the search bar, use the query `deck:<YourMainDeckName> -deck:<FirstSubdeckName> -deck:<SecondSubdeckName>`. Move all of these words to your third subdeck. 
 
-11. For each subdeck, change the daily new word limit and daily review limit, making sure that the limit for the bingos is greater than that for the JQXZ words, and the limit for the JQXZ words is greater than the limit for all other words in your third subdeck. This will ensure that you're seeing more high probability words than you see JQXZ words, and more JQXZ words than all other words.
+    For example, if your Main Deck is called `Anagrams`, your first subdeck is called `High_Prob_Bingos`, your second subdeck is called `JQXZ_words` and your third subdeck is called `Everything_Else`, then your search query would be `deck:Anagrams -deck:High_Prob_Bingos -deck:JQXZ_words`.
+
+11. For each subdeck, change the daily new word limit and daily review limit, making sure that the limit for the bingos is greater than that for the JQXZ words, and the limit for the JQXZ words is greater than the limit for all other words in your third subdeck. This will ensure that you're seeing **more** high probability words than you see JQXZ words, and **more** JQXZ words than all other words.
 
 12. Make sure that the daily new word limit and review limit for the main deck **either totals or is more than the limits for the subdecks combined**. Suspend low-priority words or change the daily new word limit for the subdeck with all other words to 0 until you're ready to study them. 
 
