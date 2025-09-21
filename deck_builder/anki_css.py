@@ -10,12 +10,12 @@ def default_anagrams_css():
     font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
     font-size: 18px;
     display: grid;
-    grid-template-columns: minmax(3ch, max-content) 
+    /* 4 columns : FRONT HOOKS | ANAGRAM | BACK HOOKS | DEFINITION */
+    grid-template-columns:  minmax(0ch, max-content) 
                             minmax(3ch, max-content) 
-                            minmax(4ch, max-content) 
-                            minmax(3ch, max-content) 
+                            minmax(0ch, max-content) 
                             1fr;
-    gap: 0.3em;
+    gap: 0.2em;
     margin-bottom: 1em;
     width: 100%;
     }
@@ -24,13 +24,10 @@ def default_anagrams_css():
     display: contents;
     }
 
-    .col.order {
-    text-align: center;
-    }
-
     .col.front {
     text-align: right;
     white-space: pre-wrap;
+		padding-right: 0.2em;
     }
 
     .col.anagram {
@@ -41,6 +38,8 @@ def default_anagrams_css():
     .col.back {
     text-align: left;
     white-space: pre-wrap;
+		padding-left: 0.05em;
+		padding-right: 0.5em;
     }
 
     .col.definition {
@@ -48,11 +47,24 @@ def default_anagrams_css():
     word-break: normal;
     overflow-wrap: break-word;
     text-align: left;
+		padding-left: 0.25em;
     }
         """
 
 def custom_anagrams_css():
     return default_anagrams_css() + """
+
+     /* ================================
+   OPTIONAL CUSTOM ANAGRAMS STYLES
+   --------------------------------
+   This entire block is commented out on purpose.
+   To experiment:
+     1) Copy a section you want (e.g., .anagrams_1 …) outside the media query
+        markers, OR
+     2) Toggle colors by changing '@media not all' -> '@media all'
+   ================================ */
+
+  @media not all {
 
     .anagrams_1 {
     background-color: #fdf4ec;
@@ -219,6 +231,8 @@ def custom_anagrams_css():
     border: 2px solid #91c0c4;
     padding: 8px;
     border-radius: 6px;}
+
+    }
     """
 
 def default_leaves_css():
