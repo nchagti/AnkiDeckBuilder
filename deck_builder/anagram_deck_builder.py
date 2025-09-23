@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import genanki
+from html import escape as _esc
 from .common import make_deck_id, parse_definition, POS_MAP
 from .anki_css import custom_anagrams_css, default_anagrams_css
 
@@ -83,6 +84,9 @@ def build_card_data(db_conn, alphagram_list):
         elif (length == 5 and num_vowels >= 4):
             tags.add("len5::vowels::4plus")
             tags.add("vowel_dump")
+        elif (length == 6 and num_vowels >= 4):
+            tags.add("len6::vowels::4plus")
+            tags.add("vowel_dump")
 
         if num_vowels == 0:
             if 4 <= length <= 8:
@@ -94,7 +98,7 @@ def build_card_data(db_conn, alphagram_list):
         tags.add(f"len{length}::vowels::{num_vowels}")
 
         # Sort entries
-        for row in sorted(rows, key=lambda r: r["word"]):
+        for row in sorted(rows, key=lambda r: r["word"]): #sorting words alphabetically
             word = row["word"]
             play_order = row["playability_order"]
             prob_order = row["probability_order1"]
@@ -119,6 +123,17 @@ def build_card_data(db_conn, alphagram_list):
                 display_word = '·' + display_word
             if is_back_hook:
                 display_word = display_word + '·'
+
+            #Play/Prob order strings
+            main_order = play_order if length in (4, 5, 6) else prob_order #still want to display prob and play orders
+            order_str = "" if main_order is None else str(main_order)
+            
+            # Escape HTML special characters
+            front_hooks_disp = _esc(front_hooks or "")
+            back_hooks_disp  = _esc(back_hooks or "")
+            word_disp        = _esc(word)
+            def_disp         = _esc(definition)
+
 
             # Extract and map part of speech
             definitions = [d.strip() for d in definition.split(' / ') if d.strip()]
@@ -146,13 +161,24 @@ def build_card_data(db_conn, alphagram_list):
             entry_html = (
                 f"<div class='entry-row'>"
                 f"<div class='col order'>{order_str}</div>"
-                f"<div class='col front'>{front_hooks}</div>"
-                f"<div class='col anagram'>{display_word}</div>"
-                f"<div class='col back'>{back_hooks}</div>"
-                f"<div class='col definition'>{definition}</div>"
+                f"<div class='col front'>{front_hooks_disp}</div>"
+                f"<div class='col anagram'>{word_disp}</div>"
+                f"<div class='col back'>{back_hooks_disp}</div>"
+                f"<div class='col definition'>{def_disp}</div>"
                 f"</div>"
             )
             entry_lines.append(entry_html)
+
+        #sort the PlayOrderList and ProbOrderList fields by ascending order
+        prob_vals = sorted([r["probability_order1"] for r in rows if r["probability_order1"]]) 
+        play_vals = sorted([r["playability_order"]  for r in rows if r["playability_order"]])
+
+        prob_orders = ", ".join(map(str, prob_vals))
+        play_orders = ", ".join(map(str, play_vals))
+
+        #create zero-padded sort key fields
+        prob_sort_key = f"{(prob_vals[0] if prob_vals else 999999):06d}"
+        play_sort_key = f"{(play_vals[0] if play_vals else 999999):06d}"
 
         card_dict[alphagram] = {
             "entries": entry_lines,
@@ -160,13 +186,29 @@ def build_card_data(db_conn, alphagram_list):
             "length": str(length),
             "num_vowels": str(num_vowels),
             "num_anagrams": str(num_anagrams),
-            "prob_orders": ", ".join(str(r["probability_order1"]) for r in rows if r["probability_order1"]),
-            "play_orders": ", ".join(str(r["playability_order"]) for r in rows if r["playability_order"]),
+            "prob_orders": prob_orders,
+            "play_orders": play_orders,
+            "prob_sort_key": prob_sort_key,
+            "play_sort_key": play_sort_key,
             "num_unique_letters": str(num_unique_letters),
             "point_value": str(point_value)
             }
 
     return card_dict
+
+#Sort 7s and up by probability, 3-6 by playability
+def _len_aware_sort_key(item):
+    alphagram, data = item
+    L = int(data["length"])
+
+    if L >= 7:
+        s = data["prob_orders"]
+        prob_key = int(s.split(",")[0].strip()) if s else 10**9
+        return (0, prob_key, alphagram)   # bucket 0 = 7+ sorted by probability
+    else:
+        s = data["play_orders"]
+        play_key = int(s.split(",")[0].strip()) if s else 10**9
+        return (1, play_key, alphagram)   # bucket 1 = <7 sorted by playability
 
 def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=False):
     deck_id = make_deck_id(deck_name)
@@ -188,6 +230,8 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
             {'name': 'PointValue'},
             {'name': 'ProbOrderList'},
             {'name': 'PlayOrderList'},
+            {'name': 'ProbSortKey'},
+            {'name': 'PlaySortKey'},
             {'name': 'NumAnagrams'}],
 
         templates=[{
@@ -200,7 +244,7 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
 
     deck = genanki.Deck(deck_id, deck_name)
 
-    for alphagram, data in cards_dict.items():
+    for alphagram, data in sorted(cards_dict.items(), key=_len_aware_sort_key):
         back = "<div class='entry-table'>" + "\n".join(data['entries']) + "</div>"
         note = genanki.Note(
             model=model,
@@ -213,6 +257,8 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
                 data['point_value'],
                 data['prob_orders'],
                 data['play_orders'],
+                data['prob_sort_key'],
+                data['play_sort_key'],
                 data['num_anagrams'],
         ],
             tags=data['tags']
