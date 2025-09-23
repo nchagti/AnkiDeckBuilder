@@ -118,16 +118,16 @@ def build_card_data(db_conn, alphagram_list):
 
 
             # Add inner hook markers
-            display_word = word
-            if is_front_hook:
-                display_word = '·' + display_word
-            if is_back_hook:
-                display_word = display_word + '·'
+            # display_word = word
+            #if is_front_hook:
+             #   display_word = '·' + display_word
+            #if is_back_hook:
+             #   display_word = display_word + '·'
 
             # Escape HTML special characters
             front_hooks_disp = _esc(front_hooks or "")
             back_hooks_disp  = _esc(back_hooks or "")
-            word_disp        = _esc(display_word)
+            word_disp        = _esc(word)
             def_disp         = _esc(definition)
 
             # Extract and map part of speech
