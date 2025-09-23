@@ -94,7 +94,7 @@ def build_card_data(db_conn, alphagram_list):
         tags.add(f"len{length}::vowels::{num_vowels}")
 
         # Sort entries
-        for row in sorted(rows, key=lambda r: r["probability_order1"] if length in (7, 8, 9) else r["playability_order"]):
+        for row in sorted(rows, key=lambda r: r["word"]):
             word = row["word"]
             play_order = row["playability_order"]
             prob_order = row["probability_order1"]
@@ -113,10 +113,6 @@ def build_card_data(db_conn, alphagram_list):
                         tags.add("len5::high_five")
 
             
-            # Word order
-            main_order = play_order if length in (4, 5, 6) else prob_order
-            order_str = str(main_order)
-
             # Add inner hook markers
             display_word = word
             if is_front_hook:
