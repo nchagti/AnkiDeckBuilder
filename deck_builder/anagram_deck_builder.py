@@ -4,6 +4,9 @@ import genanki
 from html import escape as _esc
 from .common import make_deck_id, parse_definition, POS_MAP
 from .anki_css import custom_anagrams_css, default_anagrams_css
+import csv
+from pathlib import Path
+
 
 def extract_alphagrams_from_file(filepath):
     """
@@ -131,7 +134,7 @@ def build_card_data(db_conn, alphagram_list):
             # Escape HTML special characters
             front_hooks_disp = _esc(front_hooks or "")
             back_hooks_disp  = _esc(back_hooks or "")
-            word_disp        = _esc(word)
+            word_disp        = _esc(display_word)
             def_disp         = _esc(definition)
 
 
@@ -209,6 +212,53 @@ def _len_aware_sort_key(item):
         s = data["play_orders"]
         play_key = int(s.split(",")[0].strip()) if s else 10**9
         return (1, play_key, alphagram)   # bucket 1 = <7 sorted by playability
+    
+def _back_html_from_data(data: dict) -> str:
+    return "<div class='entry-table'>" + "\n".join(data["entries"]) + "</div>"
+
+def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None = None) -> str:
+    """
+    Writes a CSV with columns that exactly match the note type's field order.
+    """
+    if save_folder is None:
+        save_folder = os.path.join(os.getcwd(), "Anki Decks")
+    os.makedirs(save_folder, exist_ok=True)
+
+    csv_path = Path(save_folder) / f"{deck_name}.csv"
+
+    # Deterministic row order (not required by Anki, but nice to have)
+    items = sorted(cards_dict.items(), key=_len_aware_sort_key)
+
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        for alphagram, data in items:
+            back_html = _back_html_from_data(data)
+            writer.writerow([
+                alphagram,
+                back_html,
+                data["length"],
+                data["num_vowels"],
+                data["num_unique_letters"],
+                data["point_value"],
+                data["prob_orders"],
+                data["play_orders"],
+                data["prob_sort_key"],
+                data["play_sort_key"],
+                data["num_anagrams"],
+            ])
+
+    print(f"CSV saved to: {csv_path}")
+    return str(csv_path)
+
+def build_and_export(input_file, db_path, deck_name, save_folder=None, use_custom_css=False):
+    cards_dict = build_cards(input_file, db_path)
+
+    # Create .apkg as before (optional)
+    create_anki_deck(cards_dict, deck_name, save_folder=save_folder, use_custom_css=use_custom_css)
+
+    # Also write a CSV for "Update existing notes" imports
+    write_csv_for_anki(cards_dict, deck_name, save_folder=save_folder)
+
 
 def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=False):
     deck_id = make_deck_id(deck_name)
@@ -267,4 +317,6 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
 
     genanki.Package(deck).write_to_file(output_file)
     print(f"Anki deck saved to: {output_file}")
+    return output_file
+
 
