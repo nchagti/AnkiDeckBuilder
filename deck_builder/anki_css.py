@@ -15,7 +15,7 @@ def default_anagrams_css():
                             minmax(4ch, max-content) 
                             minmax(3ch, max-content) 
                             1fr;
-    gap: 0.3em;
+    gap: 0.2em;
     margin-bottom: 1em;
     width: 100%;
     }
@@ -31,6 +31,7 @@ def default_anagrams_css():
     .col.front {
     text-align: right;
     white-space: pre-wrap;
+    padding-right: 0.2em;
     }
 
     .col.anagram {
@@ -41,6 +42,8 @@ def default_anagrams_css():
     .col.back {
     text-align: left;
     white-space: pre-wrap;
+    padding-left: 0.05em;
+    padding-right: 0.5em;
     }
 
     .col.definition {
@@ -48,6 +51,7 @@ def default_anagrams_css():
     word-break: normal;
     overflow-wrap: break-word;
     text-align: left;
+    padding-left: 0.25em;
     }
         """
 
