@@ -184,10 +184,7 @@ class AnkiDeckBuilder(ctk.CTk):
         
     def _allowed_formats_for(self, deck_type: str):
         deck_type = deck_type.lower()
-        if deck_type == "anagrams":
-            return ["APKG (Anki deck)", "CSV", "Both"]
-        # Definitions and Leaves: APKG only
-        return ["APKG (Anki deck)"]
+        return ["APKG (Anki deck)", "CSV", "Both"] 
 
     
     def select_save_folder(self):
@@ -204,14 +201,7 @@ class AnkiDeckBuilder(ctk.CTk):
         name = self.deck_name_var.get().strip()
         deck_type = self.deck_type_var.get().lower()
         fmt = self.output_format_var.get()
-        
-        # Hard guard in case UI state gets out of sync
-        if deck_type in ("definitions", "leaves") and fmt != "APKG (Anki deck)":
-            messagebox.showerror(
-                "Unsupported format",
-                f"'{deck_type.title()}' decks only support APKG output.")
-            return
-
+              
         if not name:
             messagebox.showerror("Missing Info", "Please enter a deck name.")
             return
@@ -258,28 +248,33 @@ class AnkiDeckBuilder(ctk.CTk):
                     return
                 cards = defs_deck_builder.parse_file(self.input_file_path, db_path)
                 use_custom_css = self.use_defs_css_var.get()
-                defs_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
-                saved_files.append(os.path.join(save_path, f"{name}.apkg"))
 
-                #if fmt in ("CSV", "Both"):
-                    # If you want CSV for definitions too, implement `write_csv_for_anki`
-                    # in defs_deck_builder with a field order matching that note type.
-                 #   messagebox.showinfo("CSV not implemented", "CSV export for Definitions isn’t implemented yet.")
-                    # (Optional) saved_files.append(path_returned)
+                if fmt in ("APKG (Anki deck)", "Both"):
+                    defs_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
+                    saved_files.append(os.path.join(save_path, f"{name}.apkg"))
+
+                if fmt in ("CSV", "Both"):
+                    csv_path = defs_deck_builder.write_csv_for_anki(cards, name, save_folder=save_path)
+                    saved_files.append(csv_path)
+
 
             elif deck_type == "leaves":
                 cards = leaves_deck_builder.parse_file(self.input_file_path)
                 use_custom_css = self.use_leaves_css_var.get()
-                leaves_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
-                saved_files.append(os.path.join(save_path, f"{name}.apkg"))
 
-                #if fmt in ("CSV", "Both"):
-                    # If you want CSV for leaves, add a writer in leaves_deck_builder.
-                 #   messagebox.showinfo("CSV not implemented", "CSV export for Leaves isn’t implemented yet.")
+                if fmt in ("APKG (Anki deck)", "Both"):
+                    leaves_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
+                    saved_files.append(os.path.join(save_path, f"{name}.apkg"))
+
+                if fmt in ("CSV", "Both"):
+                    csv_path = leaves_deck_builder.write_csv_for_anki(cards, name, save_folder=save_path)
+                    saved_files.append(csv_path)
+
+
 
             # Report success
             if saved_files:
-                msg = "Success! Generated " + "".join(saved_files)
+                msg = "Success! Generated " + "\n".join(saved_files)
                 self.status_text.set(msg)
                 self.status_label.configure(text_color="white")
             

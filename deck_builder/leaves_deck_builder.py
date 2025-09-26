@@ -91,6 +91,40 @@ def parse_csv(filepath):
                 continue
     return cards
 
+def write_csv_for_anki(cards: dict[str, str], deck_name: str, save_folder: str | None = None) -> str:
+    """
+    Writes a CSV with columns that exactly match the note type's field order.
+    """
+    if save_folder is None:
+        save_folder = os.path.join(os.getcwd(), "Anki Decks")
+    os.makedirs(save_folder, exist_ok=True)
+
+    csv_path = os.path.join(save_folder, f"{deck_name}.csv")
+
+    # New sort order: length asc, then alphabetical
+    items = sorted(cards.items(), key=lambda kv: (len(kv[0]), kv[0]))
+
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f, quoting=csv.QUOTE_ALL)
+        for q, a in items:
+            try:
+                whole_lv_str, _ = a.split("<br>")
+                leave_value = int(whole_lv_str)
+            except Exception:
+                leave_value = 0
+
+            lv_tag = get_lv_tag(leave_value)
+            html_class = (
+                lv_tag.replace("::", "_")
+                     .replace(">=", "greater_than_")
+                     .replace("<=", "less_than_")
+            )
+            w.writerow([q, a, html_class])
+
+    print(f"CSV saved to: {csv_path}")
+    return csv_path
+
+
 def create_anki_deck(cards, deck_name, save_folder=None, use_custom_css=False):
     deck_id = make_deck_id(deck_name)
 
