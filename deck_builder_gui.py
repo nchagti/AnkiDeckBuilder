@@ -274,7 +274,7 @@ class AnkiDeckBuilder(ctk.CTk):
 
             # Report success
             if saved_files:
-                msg = "Success! Generated " + "\n".join(saved_files)
+                msg = "Success! Generated\n" + "\n".join(saved_files)
                 self.status_text.set(msg)
                 self.status_label.configure(text_color="white")
             

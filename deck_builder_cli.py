@@ -57,7 +57,7 @@ def main():
         raise ValueError("Unknown deck type")
 
     if saved_files:
-        print("Success! Generated" + "\n".join(saved_files))
+        print("Success! Generated\n" + "\n".join(saved_files))
 
 
 if __name__ == '__main__':
