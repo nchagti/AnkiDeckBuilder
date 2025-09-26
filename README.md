@@ -23,7 +23,7 @@ Build study decks using Anki — the most flexible, customizable, and intelligen
 If that's not enough, unlike other tools:
 * Anki lets you upload **100k+ questions** per deck (so you can add the *entire dictionary* to your cardbox).
 * Using the Anki Deck Builder, you can study **anagrams, leave values, *and* definitions**.
-* The Anagrams Deck mobilizes [Anki's superpowered search feature](https://docs.ankiweb.net/searching.html), allowing you to search for hyper-specific queries like "all top 1500 probability 7-letter words that have only one anagram and are also nouns" **on your phone**. In this case, you'd search for ``tag:len7::prob::1-500 tag::len7::prob::501-1000 tag:len7::prob::1001-1500 tag:anagrams_1 tag:noun``.
+* The Anagrams Deck mobilizes [Anki's superpowered search feature](https://docs.ankiweb.net/searching.html), allowing you to search for *hyper-specific queries* like "all top 1500 probability 7-letter words that have only one anagram and are also nouns" **on your phone**. In this case, you'd search for ``tag:len7::prob::1-500 tag::len7::prob::501-1000 tag:len7::prob::1001-1500 tag:anagrams_1 tag:noun``.
 
 ## Running the Anki Deck Builder
 There are a few ways to run the deck builder on your computer.
@@ -84,7 +84,7 @@ Customize the **appearance**, **behavior** and **organization** of your study de
 * **Visuals**:
 
   - The Anki Deck Builder provides **Zyzzyva-style formatting by default**
-  - It also includes **optional** color-coding for 
+  - It also includes **optional color-coding** for 
       - Alphagram answers by anagram count
       - Leaves by the leave-value range, and
       - (soon) Definitions by part of speech
@@ -109,7 +109,7 @@ Customize the **appearance**, **behavior** and **organization** of your study de
 
 It's pretty simple to create your own deck. To create [the deck from the example above](#1-main-decks-subdecks-and-filtering), follow these steps: 
 1. Create a text file with all words you want to study. This will be the content of your Main Deck, so you should include *all* the words you want to study. 
-2. Run the [Anki Deck Builder](#running-the-anki-deck-builder)
+2. Run the [Anki Deck Builder](#running-the-anki-deck-builder).
 
 3. Upload your `.txt` file with with one alphagram or word per line and your lexicon database (`.db`) file. 
 
@@ -138,7 +138,7 @@ It's pretty simple to create your own deck. To create [the deck from the example
 
 11. For each subdeck, change the daily new word limit and daily review limit, making sure that the limit for the bingos is greater than that for the JQXZ words, and the limit for the JQXZ words is greater than the limit for all other words in your third subdeck. This will ensure that you're seeing **more** high probability words than you see JQXZ words, and **more** JQXZ words than all other words.
 
-12. Make sure that the daily new word limit and review limit for the main deck **either totals or is more than the limits for the subdecks combined**. Suspend low-priority words or change the daily new word limit for the subdeck with all other words to 0 until you're ready to study them. 
+12. Make sure that the daily new word limit and review limit for the main deck **either totals or is more than the limits for the subdecks combined**. I recommend setting the review count to 9999 (so you don't miss out on any reviews that are due) and adjusting the number of New Cards to manage the workload. Suspend low-priority words or change the daily new word limit for the subdeck with all other words to 0 until you're ready to study them. 
 
 
 Adding more questions to existing decks later? No problem. Just import another `.apkg` file using the **same Deck name** to append words to an existing deck.
@@ -159,15 +159,16 @@ Here’s a breakdown of the available arguments for `cli_deck_builder.py`:
 | `-f`  | `--format`    | No        | `apkg`       | Output format: `apkg` (default), `csv`, or `both`.                                                     |
 
 
-An example Anagrams deck with color coding saved to ``Anki Decks`` in the working directory 
-```
-python cli_deck_builder.py -i words.txt -d MainDeck -t anagrams --db <path to .db file> -c
-```
 
-Generate a Leaves deck, saved to `./LeavesDecks`
-```
-python cli_deck_builder.py -i common_leaves.csv -d CommonLeaves -t leaves -o LeavesDecks
-```
+- **Example**: Generate an Anagrams deck with color coding saved to ``Anki Decks`` in the working directory: 
+  ```
+  python cli_deck_builder.py -i words.txt -d MainDeck -t anagrams --db <path to .db file> -c
+  ```
+
+- **Example**: Generate a Leaves deck, saved to `./LeavesDecks`:
+  ```
+  python cli_deck_builder.py -i common_leaves.csv -d CommonLeaves -t leaves -o LeavesDecks
+  ```
 
 ## Importing your Cardbox from Zyzzyva/Xerafin
 
