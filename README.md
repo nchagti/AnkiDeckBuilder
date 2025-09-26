@@ -5,8 +5,11 @@ Build study decks using Anki — the most flexible, customizable, and intelligen
 ## Table of Contents
 
 - [Why Anki?](#why-anki)
+- [Running the Anki Deck Builder](#running-the-anki-deck-builder)
 - [Getting the Most Out of Anki](#getting-the-most-out-of-anki)
-- [How to Use the Anki Deck Builder](#how-to-use-the-anki-deck-builder)
+- [Creating Anki Decks](#creating-anki-decks)
+- [CLI Parameters](#cli-parameters)
+- [Importing your Cardbox from Zyzzyva/Xerafin](#importing-your-cardbox-from-zyzzyvaxerafin)
 
 
 ## Why Anki?
@@ -18,13 +21,43 @@ Build study decks using Anki — the most flexible, customizable, and intelligen
 3. Anki's **FSRS algorithm** was the original inspiration behind **WordVault** *and* features an optimizer that uses machine learning to learn your memory patterns and to find parameters that best fit your review history  
 
 If that's not enough, unlike other tools:
-* Anki lets you upload **100k+ questions** per deck.
+* Anki lets you upload **100k+ questions** per deck (so you can add the *entire dictionary* to your cardbox).
 * Using the Anki Deck Builder, you can study **anagrams, leave values, *and* definitions**.
-* You **won't be penalized for missing a day or week of studying** — the FSRS reschedules your flashcards intelligently.
+* The Anagrams Deck mobilizes [Anki's superpowered search feature](https://docs.ankiweb.net/searching.html), allowing you to search for hyper-specific queries like "all top 1500 probability 7-letter words that have only one anagram and are also nouns" **on your phone**. In this case, you'd search for ``tag:len7::prob::1-500 tag::len7::prob::501-1000 tag:len7::prob::1001-1500 tag:anagrams_1 tag:noun``.
+
+## Running the Anki Deck Builder
+There are a few ways to run the deck builder on your computer.
+
+ ### Windows
+   You have three options:
+
+   - **Executable (recommended)**:  
+     Download the zipped file from the [latest Release](https://github.com/nchagti/AnkiDeckBuilder/releases), and **extract** the folder `Anki_Deck_Builder` to an accessible location (like your Downloads folder).  
+
+     From inside the extracted `Anki_Deck_Builder` folder, double-click `Anki_Deck_Builder.exe`.
+
+     > **Important**: Make sure to *extract the entire* Anki_Deck_Builder *folder.* The .exe **will not run** without the _internal folder (which is bundled inside Anki_Deck_Builder).
+
+   - **Source GUI**:  
+     Clone this repo and double-click `gui_deck_builder.py`.  
+  
+   - Use the **command-line interface** (CLI):
+      > Note: See the [CLI Parameters](#cli-parameters) section for a full breakdown of required and optional arguments to run ``cli_deck_builder.py``.
+
+   ### macOS and Linux
+  You have two options:
+   - **Source GUI**:        
+      Clone the repo and double-click `gui_deck_builder.py`.
+      > Note: This presumes you have the TK App installed
+
+   - Use the **command-line interface** (CLI):
+
+     > Note: See the [CLI Parameters](#cli-parameters) section for a full breakdown of required and optional arguments to run ``cli_deck_builder.py``.
+
 
 ## Getting the most out of Anki
 
-### 1. **Main Decks, Subdecks, and Filtering**
+### 1. Main Decks, Subdecks, and Filtering
 
 Since the FSRS is best trained on a global context, it is a good idea to **create a Main Deck** with a *lot* of questions and, within that Main Deck, **multiple subdecks** with different types of questions. 
 
@@ -34,17 +67,17 @@ The Anki Deck Builder **automatically generates tags and fields** for each deck 
     - Use the tags or fields to create subdecks including subsets of words that you want to focus on.
         - **For example**, if you know you want to learn the top 1000 probability 7- and 8-letter bingos and JQXZ words, but you want to prioritize the bingos, then you can use the tags to create three subdecks within your Main Deck: one with the bingos, one with the JQXZ words, and one with all other words in your Main Deck.
     
-- **Fields by deck type**: Use these fields to search filter your decks
-   - *Anagrams Deck*: question, answer, length, number of anagrams, number of vowels, number of unique letters, point value, probability orders, playability orders, number of anagrams 
+- **Fields by deck type**: Use these fields to search, filter or sort your decks
+   - *Anagrams Deck*: question, answer, length, number of anagrams, number of vowels, number of unique letters, point value, probability orders, playability orders, number of anagrams, probability sort key, playability sort key
    - *Leaves Deck*: leave, leave value, leave value range 
    - *Definitions Deck*: word, definition 
    
 - **Tags by deck type**: Use these tags to search and filter your decks
-   - *Anagrams Deck*: length, number of anagrams, number of vowels, probability order (individual), probabliity order (range), playability order (individual), playability order (range), part of speech, alternate spelling, contains jqxz 
+   - *Anagrams Deck*: length, number of anagrams, number of vowels, probability order (individual), probabliity order (range), playability order (individual), playability order (range), part of speech, alternate spelling, contains JQXZ 
    - *Leaves Deck*: length, number of blanks, leave value range 
    - *Definitions Deck*: part of speech, alternate spellings, inner hook 
 
-### 2. **Visual and Algorithmic Customizability**
+### 2. Visual and Algorithmic Customizability
 
 Customize the **appearance**, **behavior** and **organization** of your study decks:
 
@@ -60,37 +93,36 @@ Customize the **appearance**, **behavior** and **organization** of your study de
 
 * **Review Behavior**:
 
-  * With Anki, you can **control how many words you want to study** every day, just today, or by a particular deck 
-  * You can even set **different schedules** by the day of the week (e.g., fewer cards on weekends)!
+  * With Anki, you can **control how many words you want to study** every day, just today, or by each deck 
+  * You can even set **different schedules** for each day of the week (e.g., fewer cards on weekends)!
   * You won't be penalized for missing a day or week of studying — the FSRS will **automatically reschedule** your due cards (though you can increase your limit for the day to work through them)
 
 * **Organization**:
   * Create your own tags and use the hierarchical tags (`category::subcategory`) to keep decks organized
-  * Use subdecks to categorize *types* of questions and prioritize them as you see fit
+  * Use subdecks to categorize *types* of questions and prioritize them as you see fit (e.g. more top probable bingos than JQXZ words)
   * Use flags to mark questions that you want to come back to later
 
 
-## How to Use the Anki Deck Builder
+
+
+## Creating Anki Decks
 
 It's pretty simple to create your own deck. To create [the deck from the example above](#1-main-decks-subdecks-and-filtering), follow these steps: 
 1. Create a text file with all words you want to study. This will be the content of your Main Deck, so you should include *all* the words you want to study. 
-2. Run the Anki Deck Builder
-    - **For Windows**, download the zipped file from the latest Release and extract the folder `Anki_Deck_Builder` to an accessible location (like your Downloads folder). From the `Anki_Deck_Builder` folder, run `Anki_Deck_Builder.exe`.
-      > Make sure to **extract the entire `Anki_Deck_Builder` folder.** The `.exe` will not work without the `_internal` folder (found in `Anki_Deck_Builder`). 
-  
-     - **For MacOS and Linux**, clone the repo and run `cli_make_deck.py`. 
+2. Run the [Anki Deck Builder](#running-the-anki-deck-builder)
 
 3. Upload your `.txt` file with with one alphagram or word per line and your lexicon database (`.db`) file. 
 
    I recommend using the [2nd ed. CSW24 Crowdsourced Definitions](https://github.com/jvc56/CrowdsourcedDefs/blob/main/editions/2/CSW24.zip), but you can find your preferred lexicon database file in the following common locations:
     - Windows (Collins Zyzzyva): `C:\Users\<your name>\.collinszyzzyva\lexicons`
     - Windows (NASPA Zyzzyva): `C:\Users\<your name>\Zyzzyva\lexicons`
-    - MacOS and Linux (Collins Zyzzyva): ```~/.collinszyzzyva/lexicons`
+    - MacOS and Linux (Collins Zyzzyva): `~/.collinszyzzyva/lexicons`
     - MacOS and Linux (NASPA Zyzzyva): ```~/Zyzzyva/lexicons```
   
-4. Choose if you would like the custom color-coding by number of anagrams, the location where you'd like to save your Anki deck, and click `Create Deck`. This will generate a `.apkg` file. 
+4. Choose if you would like the custom color-coding by number of anagrams, the location where you'd like to save your Anki deck, and the output file format (`.apkg`). Click `Create Deck`. This will generate your Anki deck. 
+    > You will not need to use the CSV output unless you're making changes to the contents of your pre-existing cards
         
-5. Open **Anki**, click `Import File`, and choose the deck (`.apkg`) that you just generated. 
+5. Open Anki on your computer, click `Import File`, and choose the deck (`.apkg`) that you just generated. 
 
 6. **After** importing your Main Deck, click `Create Deck`. Name this deck `<YourMainDeckName>::<FirstSubdeckName>`. This will create an empty subdeck for your Main Deck. 
 
@@ -108,10 +140,34 @@ It's pretty simple to create your own deck. To create [the deck from the example
 
 12. Make sure that the daily new word limit and review limit for the main deck **either totals or is more than the limits for the subdecks combined**. Suspend low-priority words or change the daily new word limit for the subdeck with all other words to 0 until you're ready to study them. 
 
-13. Adding more questions to existing decks later? No problem.
 
-    Just import another `.apkg` file using the **same Deck name** to append words to an existing deck.
+Adding more questions to existing decks later? No problem. Just import another `.apkg` file using the **same Deck name** to append words to an existing deck.
 
+## CLI Parameters
+
+Here’s a breakdown of the available arguments for `cli_deck_builder.py`:
+
+
+| Shortform | Longform          | Required  | Default      | Description                                                                                            |
+| ----- | ------------- | --------- | ------------ | ------------------------------------------------------------------------------------------------------ |
+| `-i`  | `--input`     |  Yes     | —            | Input file. Use `.txt` for defs/anagrams, `.csv` or `.jqz` for leaves.                                 |
+| `-d`  | `--deck-name` |  Yes     | —            | Name of the output fille.                                                                                 |
+| `-t`  | `--type`      |  Yes     | —            | Deck type: `leaves`, `defs`, or `anagrams`.                                                            |
+| —     | `--db`        | Sometimes | —            | Path to lexicon `.db` file (required for `anagrams` and `defs`).                                       |
+| `-c`     | `--color`     | No        | `False`      | Enable color-coding: number of anagrams (Anagrams), leave value ranges (Leaves), or part of speech (Defs). |
+| `-o`  | `--output`    | No        | `Anki Decks`  | Output folder for generated files. ``Anki Decks`` folder created in working directory if no output path is provided.                                                                     |
+| `-f`  | `--format`    | No        | `apkg`       | Output format: `apkg` (default), `csv`, or `both`.                                                     |
+
+
+An example Anagrams deck with color coding saved to ``Anki Decks`` in the working directory 
+```
+python cli_deck_builder.py -i words.txt -d MainDeck -t anagrams --db <path to .db file> -c
+```
+
+Generate a Leaves deck, saved to `./LeavesDecks`
+```
+python cli_deck_builder.py -i common_leaves.csv -d CommonLeaves -t leaves -o LeavesDecks
+```
 
 ## Importing your Cardbox from Zyzzyva/Xerafin
 
