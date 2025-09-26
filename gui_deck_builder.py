@@ -1,9 +1,123 @@
+#---- bootstrap ----
+# This section ensures that required dependencies are installed at runtime.
+
+import os, sys, subprocess, importlib.util, re
+from pathlib import Path
+
+def _have(module: str) -> bool:
+    try:
+        return importlib.util.find_spec(module) is not None
+    except Exception:
+        return False
+
+def _ensure_tk_or_die():
+    # Tk cannot be reliably installed via pip; it must come with Python/system pkgs
+    if _have("tkinter"):
+        return
+    msg = (
+        "[deps] tkinter is not available. The GUI cannot start without Tk.\n"
+        "Suggested fixes by OS:\n"
+        "  • Windows/macOS: Install Python from python.org (includes Tk).\n"
+        "  • Ubuntu/Debian:  sudo apt-get install python3-tk\n"
+        "  • Fedora:         sudo dnf install python3-tkinter\n"
+        "  • Arch:           sudo pacman -S tk\n"
+    )
+    print(msg)
+    sys.exit(1)
+
+def _parse_requirements(req_path: Path) -> list[str]:
+    """Return distribution specifiers exactly as written (e.g., 'genanki==0.13.1')."""
+    specs = []
+    if not req_path.exists():
+        return specs
+    for line in req_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        specs.append(line)
+    return specs
+
+def _dist_name(spec: str) -> str:
+    """
+    Extract distribution name from a requirement spec. Examples:
+      'customtkinter==5.2.2' -> 'customtkinter'
+      'PyYAML>=6.0'          -> 'PyYAML'
+    """
+    return re.split(r"[<>=;\[\s]", spec, maxsplit=1)[0]
+
+def _module_name_from_dist(dist: str) -> str:
+    """
+    Best-effort mapping from distribution to import module.
+    Handles common differences (e.g., PyYAML -> yaml).
+    """
+    special = {
+        "PyYAML": "yaml",
+    }
+    if dist in special:
+        return special[dist]
+    # heuristic: normalize dashes to underscores, lowercase
+    return dist.replace("-", "_").lower()
+
+def _missing_modules_from_requirements(req_specs: list[str]) -> list[str]:
+    missing = []
+    for spec in req_specs:
+        dist = _dist_name(spec)
+        mod = _module_name_from_dist(dist)
+        if not _have(mod):
+            missing.append(spec)  # keep full spec for pip install
+    return missing
+
+def _pip_install(args: list[str]) -> bool:
+    cmd = [sys.executable, "-m", "pip", "install"] + args
+    try:
+        subprocess.check_call(cmd)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"[deps] pip failed: {e}")
+        return False
+
+def _ensure_runtime_requirements():
+    """
+    If any modules in requirements.txt are missing, install them
+    and re-execute the script exactly once.
+    """
+    project_dir = Path(__file__).resolve().parent
+    req_path = project_dir / "requirements.txt"
+    specs = _parse_requirements(req_path)
+    if not specs:
+        return  # no runtime requirements file; assume dev environment
+
+    missing_specs = _missing_modules_from_requirements(specs)
+    if not missing_specs:
+        return  # all good
+
+    if os.environ.get("ANKI_GUI_BOOTSTRAPPED") == "1":
+        # already tried installing and restarted; avoid loops
+        print("[deps] Missing modules remain after install attempt. Exiting.")
+        sys.exit(1)
+
+    print(f"[deps] Missing dependencies detected; installing from {req_path.name} ...")
+    ok = _pip_install(["-r", str(req_path)])
+    if not ok:
+        print("[deps] Automatic install failed. Please run: pip install -r requirements.txt")
+        sys.exit(1)
+
+    # Re-execute the script so fresh modules are importable cleanly
+    os.environ["ANKI_GUI_BOOTSTRAPPED"] = "1"
+    os.execv(sys.executable, [sys.executable, *sys.argv])
+
+# Order: Tk check first (cannot auto-install), then requirements
+_ensure_tk_or_die()
+_ensure_runtime_requirements()
+
+# ---- end bootstrap ----
+
+
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from deck_builder import anagram_deck_builder, leaves_deck_builder, defs_deck_builder
 from utils import save_last_folder, load_last_folder
 import os
-
 
 class AnkiDeckBuilder(ctk.CTk):
     def __init__(self):
@@ -117,7 +231,7 @@ class AnkiDeckBuilder(ctk.CTk):
     def folder_name_display(self):
         if self.user_chose_folder and self.save_folder_path:
             return f"Saving to: {self.save_folder_path}"
-        return "If you don't choose a folder, one labeled 'Anki Decks' will automatically be created in the directory with your deck."
+        return "If you don't choose a folder, one labeled 'Anki Decks' will automatically be created in the working directory with your deck."
 
     def select_input_file(self):
         deck_type = self.deck_type_menu.get().lower()

@@ -10,7 +10,7 @@ def main():
     parser.add_argument('--type', '-t', required=True,
                         choices=['leaves', 'defs', 'anagrams'], help='Type of deck to build')
     parser.add_argument('--db', help='Path to lexicon .db file (required for anagrams and defs type)')
-    parser.add_argument('--color', action='store_true', help='Color-code Anagrams deck answers by number of anagrams, Leaves deck questions by leave value range, and Definitions deck answers by part of speech.')
+    parser.add_argument('--color', '-c', action='store_true', help='Color-code Anagrams deck answers by number of anagrams, Leaves deck questions by leave value range, and Definitions deck answers by part of speech.')
     parser.add_argument('--output', '-o', default='Anki Decks', help='Output folder for the .apkg file')
     parser.add_argument('--format', '-f', choices=['apkg', 'csv', 'both'], default='apkg', help='Output format: apkg (default), csv, or both')
 
