@@ -11,11 +11,11 @@ def default_anagrams_css():
     font-size: 18px;
     display: grid;
     grid-template-columns: minmax(3ch, max-content) 
-                            minmax(3ch, max-content) 
+                            minmax(2ch, max-content) 
                             minmax(4ch, max-content) 
-                            minmax(3ch, max-content) 
+                            minmax(2ch, max-content) 
                             1fr;
-    gap: 0.2em;
+    gap: 0.15em;
     margin-bottom: 1em;
     width: 100%;
     }
@@ -31,19 +31,19 @@ def default_anagrams_css():
     .col.front {
     text-align: right;
     white-space: pre-wrap;
-    padding-right: 0.2em;
+    padding-left: 0.7em;
     }
 
     .col.anagram {
     text-align: center;
     white-space: pre-wrap;
+    padding-left: 0.25em;
     }
 
     .col.back {
     text-align: left;
     white-space: pre-wrap;
-    padding-left: 0.05em;
-    padding-right: 0.5em;
+    padding-left: 0.25em;
     }
 
     .col.definition {
@@ -51,7 +51,7 @@ def default_anagrams_css():
     word-break: normal;
     overflow-wrap: break-word;
     text-align: left;
-    padding-left: 0.25em;
+    padding-left: 0.9em;
     }
         """
 
