@@ -218,7 +218,7 @@ def _back_html_from_data(data: dict) -> str:
 
 def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None = None) -> str:
     """
-    Writes a CSV with columns that exactly match the note type's field order.
+    Writes a CSV with columns that exactly match the note type's field order, plus a Tags column.
     """
     if save_folder is None:
         save_folder = os.path.join(os.getcwd(), "Anki Decks")
@@ -229,10 +229,14 @@ def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None
     # Deterministic row order (not required by Anki, but nice to have)
     items = sorted(cards_dict.items(), key=_len_aware_sort_key)
 
+    def tags_to_str(tags): # anki wants space-separated tags
+        return " ".join(sorted(tags))
+
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         for alphagram, data in items:
             back_html = _back_html_from_data(data)
+            tags_str = tags_to_str(data["tags"])
             writer.writerow([
                 alphagram,
                 back_html,
@@ -245,6 +249,7 @@ def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None
                 data["prob_sort_key"],
                 data["play_sort_key"],
                 data["num_anagrams"],
+                tags_str,
             ])
 
     print(f"CSV saved to: {csv_path}")
