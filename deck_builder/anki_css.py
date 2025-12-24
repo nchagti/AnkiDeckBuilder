@@ -11,9 +11,9 @@ def default_anagrams_css():
     font-size: 18px;
     display: grid;
     grid-template-columns: minmax(3ch, max-content) 
-                            minmax(2ch, max-content) 
+                            minmax(1ch, max-content) 
                             minmax(4ch, max-content) 
-                            minmax(2ch, max-content) 
+                            minmax(1ch, max-content) 
                             1fr;
     gap: 0.15em;
     margin-bottom: 1em;
@@ -59,7 +59,7 @@ def custom_anagrams_css():
     return default_anagrams_css() + """
 
     .anagrams_1 {
-    background-color: #fdf4ec;
+    background-color: #fdf4ec; /* orange */
     border: 2px solid #ffcba4;
     padding: 8px;
     border-radius: 6px;
@@ -115,39 +115,52 @@ def custom_anagrams_css():
     }
 
     .anagrams_9 {
-    background-color: #eef6ee; /* sage */
-    border: 2px solid #cfe3d0;
-    padding: 8px;
-    border-radius: 6px;
-    }
-
-    .anagrams_10 {
     background-color: 	#f9ece8; /* peach */
     border: 2px solid 	#e6ccc1;
     padding: 8px;
     border-radius: 6px;
     }
 
+    .anagrams_10 {
+    background-color: #eef6ee; /* sage */
+    border: 2px solid #cfe3d0;
+    padding: 8px;
+    border-radius: 6px;
+    }
+
     .anagrams_11 {
+    background-color: #f8ebeb; /* rose-red */
+    border: 2px solid #fdaaaa;
+    padding: 8px;
+    border-radius: 6px;
+    }
+
+    .anagrams_12 {
     background-color: 	#f0f8f9; /* soft teal */
     border: 2px solid 	#bfe3e7;
+    padding: 8px;
+    border-radius: 6px;
+    }
+
+    .anagrams_13 {
+    background-color: 	#f8f2eb; /* ochre */
+    border: 2px solid 	#fad2a4;
     padding: 8px;
     border-radius: 6px;
     }
     
     /* NIGHTMODE */
     .nightMode .anagrams_1 {
-	color: black;
+	  color: black;
     background-color: #ffe7d3; /* orange */
     border: 2px solid #e8b289;
     padding: 8px;
     border-radius: 6px;
     }
-
     
     .nightMode .anagrams_2 {
     color: black;
-    background-color: #f8eeff; /* purple */
+    background-color: #f4ebfc; /* purple */
     border: 2px solid #c3a5da;
     padding: 8px;
     border-radius: 6px;
@@ -219,10 +232,25 @@ def custom_anagrams_css():
 
     .nightMode .anagrams_11 {
     color: black;
+    background-color: #f7e7e7; /* rose-red */
+    border: 2px solid #fdaaaa;
+    padding: 8px;
+    border-radius: 6px;}
+
+    .nightMode .anagrams_12 {
+    color: black;
     background-color: #ddf6f6; /* blue */
     border: 2px solid #91c0c4;
     padding: 8px;
     border-radius: 6px;}
+
+    .nightMode .anagrams_13 {
+    color: black;
+    background-color: 	#f8f2eb; /* ochre */
+    border: 2px solid 	#fad2a4;
+    padding: 8px;
+    border-radius: 6px;
+    }
     """
 
 def default_leaves_css():
