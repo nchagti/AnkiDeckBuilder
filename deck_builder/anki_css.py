@@ -1,10 +1,74 @@
 def default_anagrams_css():
     return """
+    /* ---------- Set up ---------- */
     .card {
-    font-family: "MS Shell Dlg 2", "Tahoma", sans-serif;
-    font-size: 28px;
-    text-align: center;
+      font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
+      font-size: 20px;
+      --rack-max-width: 800px;         
+      --tile-size: 48px;
+      --tile-gap: 2px;
+      --tile-radius: 8px;
+
+      /* Dark tiles */
+      --tile-face: #111;
+      --tile-edge: #0a0a0a;
+      --tile-text: #f7f7f7;
+      --tile-shadow: rgba(0,0,0,0.35);
     }
+
+    /* ---------- Rack container for when i get my shit together ---------- */
+    .rack {
+      position: relative;
+      max-width: var(--rack-max-width);
+      margin: 0 auto;
+      height: calc(var(--tile-size) * 0.9);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+
+    /* ---------- Tile row ---------- */
+    .tiles {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      gap: var(--tile-gap);
+    }
+
+    /* ---------- Individual tile ---------- */
+    .tile {
+      position: relative;
+      width: var(--tile-size);
+      height: calc(var(--tile-size) * 1.04);
+      border-radius: var(--tile-radius);
+
+      display: grid;
+      place-items: center;
+                
+      font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
+      font-size: calc(var(--tile-size) * 0.7);
+      line-height: 1.5;
+      color: var(--tile-text);
+      letter-spacing: 0em ;
+
+      background:
+        linear-gradient(to right, 
+          var(--tile-edge) 0%, 
+          var(--tile-face) 12%, 
+          var(--tile-face) 88%, 
+          var(--tile-edge) 100%);
+
+      box-shadow:
+        0 6px 10px var(--tile-shadow),
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -1px 0 rgba(0,0,0,0.25);
+
+      border-bottom: 3px solid var(--tile-edge);
+      }
+
+    /* ----- Back of card ----- */
 
     .entry-table {
     font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
@@ -53,11 +117,12 @@ def default_anagrams_css():
     text-align: left;
     padding-left: 0.9em;
     }
-        """
+    """
 
-def custom_anagrams_css():
-    return default_anagrams_css() + """
-
+def custom_colors_css():
+    return """
+    
+    /* COLORS FOR ANAGRAM TAGS */
     .anagrams_1 {
     background-color: #fdf4ec; /* orange */
     border: 2px solid #ffcba4;
@@ -252,6 +317,9 @@ def custom_anagrams_css():
     border-radius: 6px;
     }
     """
+
+def custom_anagrams_css():
+    return default_anagrams_css() + "\n\n" + custom_colors_css()
 
 def default_leaves_css():
     return """.card { 

@@ -3,7 +3,7 @@ import sqlite3
 import genanki
 from html import escape as _esc
 from .common import make_deck_id, parse_definition, POS_MAP
-from .anki_css import custom_anagrams_css, default_anagrams_css
+from .anki_css import custom_anagrams_css, default_anagrams_css, custom_colors_css
 import csv
 from pathlib import Path
 
@@ -44,6 +44,29 @@ def batch_query_by_alphagram(conn, alphagrams):
 
     return all_results
 
+def bucketed_tags(tags, length, label, order, bucket_sizes=(500, 1000, 5000, 10000)):
+    for size in bucket_sizes:
+        start = ((order - 1) // size) * size + 1
+        end = start + size - 1
+        tags.add(f"len{length}::{label}::{start}-{end}")
+
+def build_front_html(alphagram, first_word):
+    """attempting to make cool tiles that you can click on to go to the word's Neighborhood page """
+
+    spans = "".join(f"<span class='tile'><span class='letter'>{c}</span></span>" for c in alphagram)
+
+    return (
+        f"<a class='alphalink' "
+        f"href='https://www.studycade.com/#/neighborhood?query={alphagram}&word={first_word}'>"
+        f"<div class='rack'>"
+        f"  <div class='tiles'>{spans}</div>"
+        f"</div>"
+        f"</a>"
+    )
+
+def _back_html_from_data(data: dict) -> str:
+    return "<div class='entry-table'>" + "\n".join(data["entries"]) + "</div>"
+
 def build_card_data(db_conn, alphagram_list):
     card_dict = {}
     rows = batch_query_by_alphagram(db_conn, alphagram_list)
@@ -62,6 +85,8 @@ def build_card_data(db_conn, alphagram_list):
         tags = set()
 
         first = rows[0] # get repeating info for all anagrams in first instance of anagram
+        first_word = first["word"]
+        front_html = build_front_html(alphagram, first_word)
         length = first["length"]
         num_anagrams = first["num_anagrams"]
         num_vowels = first["num_vowels"]
@@ -92,7 +117,7 @@ def build_card_data(db_conn, alphagram_list):
             tags.add("vowel_dump")
 
         if num_vowels == 0:
-            if 4 <= length <= 8:
+            if 3 <= length <= 8:
                 tags.add("consonant_dump")
         elif num_vowels == 1:
             if 5 <= length <= 8:
@@ -104,7 +129,7 @@ def build_card_data(db_conn, alphagram_list):
         for row in sorted(rows, key=lambda r: r["word"]): #sorting words alphabetically
             word = row["word"]
             play_order = row["playability_order"]
-            prob_order = row["probability_order1"]
+            prob_order = row["probability_order2"]
             front_hooks = row["front_hooks"] or ''
             back_hooks = row["back_hooks"] or ''
             is_front_hook = row["is_front_hook"]
@@ -151,15 +176,9 @@ def build_card_data(db_conn, alphagram_list):
                 if alt_spellings:
                     tags.add("alternate_spellings")
 
-            # Tag by indv prob + indv play + bucket
-            if length in (4, 5, 6):
-                tags.add(f"len{length}::play::{play_order}")
-                play_bucket = (play_order - 1) // 500 * 500 + 1
-                tags.add(f"len{length}::play::{play_bucket}-{play_bucket + 499}")
-            elif length in (7, 8, 9):
-                tags.add(f"len{length}::prob::{prob_order}")
-                prob_bucket = (prob_order - 1) // 500 * 500 + 1
-                tags.add(f"len{length}::prob::{prob_bucket}-{prob_bucket + 499}")
+            # Tag by indv prob + indv play
+            tags.add(f"len{length}::prob::{prob_order}")
+            tags.add(f"len{length}::play::{play_order}")
 
             entry_html = (
                 f"<div class='entry-row'>"
@@ -173,8 +192,15 @@ def build_card_data(db_conn, alphagram_list):
             entry_lines.append(entry_html)
 
         #sort the PlayOrderList and ProbOrderList fields by ascending order
-        prob_vals = sorted([r["probability_order1"] for r in rows if r["probability_order1"]]) 
+        prob_vals = sorted([r["probability_order2"] for r in rows if r["probability_order2"]]) 
         play_vals = sorted([r["playability_order"]  for r in rows if r["playability_order"]])
+
+        #tag buckets based on first value in each list
+        if prob_vals:
+            bucketed_tags(tags, length, "prob", prob_vals[0])
+
+        if play_vals:
+            bucketed_tags(tags, length, "play", play_vals[0])
 
         prob_orders = ", ".join(map(str, prob_vals))
         play_orders = ", ".join(map(str, play_vals))
@@ -183,8 +209,14 @@ def build_card_data(db_conn, alphagram_list):
         prob_sort_key = f"{(prob_vals[0] if prob_vals else 999999):06d}"
         play_sort_key = f"{(play_vals[0] if play_vals else 999999):06d}"
 
+        words = sorted([r["word"] for r in rows if r["word"]])
+        anagrams = ", ".join(words)
+
         card_dict[alphagram] = {
+            "front_html": front_html,
             "entries": entry_lines,
+            "anagrams": anagrams,
+            "first_word": first_word,
             "tags": sorted(tags),
             "length": str(length),
             "num_vowels": str(num_vowels),
@@ -199,6 +231,7 @@ def build_card_data(db_conn, alphagram_list):
 
     return card_dict
 
+
 #Sort 7s and up by probability, 3-6 by playability
 def _len_aware_sort_key(item):
     alphagram, data = item
@@ -212,9 +245,7 @@ def _len_aware_sort_key(item):
         s = data["play_orders"]
         play_key = int(s.split(",")[0].strip()) if s else 10**9
         return (1, play_key, alphagram)   # bucket 1 = <7 sorted by playability
-    
-def _back_html_from_data(data: dict) -> str:
-    return "<div class='entry-table'>" + "\n".join(data["entries"]) + "</div>"
+
 
 def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None = None) -> str:
     """
@@ -239,7 +270,10 @@ def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None
             tags_str = tags_to_str(data["tags"])
             writer.writerow([
                 alphagram,
+                data["front_html"],
                 back_html,
+                data["anagrams"],
+                data["first_word"],
                 data["length"],
                 data["num_vowels"],
                 data["num_unique_letters"],
@@ -277,8 +311,11 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         1607392319,
         'Anagram Model',
         fields=[
-            {'name': 'Alphagram'}, 
+            {'name': 'Alphagram'},
+            {'name': 'FrontHTML'},
             {'name': 'Back'},
+            {'name': 'Anagrams'},
+            {'name': 'FirstWord'},
             {'name': 'Length'},
             {'name': 'NumVowels'},
             {'name': 'NumUniqueLetters'},
@@ -291,10 +328,13 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
 
         templates=[{
             'name': 'Card 1',
-            'qfmt': '{{Alphagram}}',
+            'qfmt': '{{FrontHTML}}',
             'afmt': '{{FrontSide}}<hr id="answer"><div class="{{Tags}}">{{Back}}</div>',
         }],
-        css=custom_anagrams_css() if use_custom_css else default_anagrams_css()
+        css= (
+            custom_anagrams_css() 
+            if use_custom_css 
+            else default_anagrams_css() + "\n\n@media not all {\n" + custom_colors_css() + "\n}")
     )
 
     deck = genanki.Deck(deck_id, deck_name)
@@ -305,7 +345,10 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
             model=model,
             fields=[
                 alphagram,
+                data['front_html'],
                 back,
+                data['anagrams'],
+                data['first_word'],
                 data['length'],
                 data['num_vowels'],
                 data['num_unique_letters'],
