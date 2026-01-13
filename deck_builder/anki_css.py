@@ -4,25 +4,31 @@ def default_anagrams_css():
     .card {
       font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
       font-size: 20px;
-      --rack-max-width: 800px;         
-      --tile-size: 48px;
+      --rack-max-width: 600px;         
+      --tile-size: 40px;
       --tile-gap: 2px;
-      --tile-radius: 8px;
+      --tile-radius: 4px;
 
       /* Dark tiles */
-      --tile-face: #111;
-      --tile-edge: #0a0a0a;
+      --tile-face: #15083b;
+      --tile-edge: #09021c;
       --tile-text: #f7f7f7;
-      --tile-shadow: rgba(0,0,0,0.35);
+      --tile-shadow: rgba(21,8,59,0.35);
     }
 
-    /* ---------- Rack container for when i get my shit together ---------- */
+    a {
+      text-decoration: none;
+      }
+
+    /* ---------- Rack container for when i get myself together ---------- */
     .rack {
       position: relative;
       max-width: var(--rack-max-width);
       margin: 0 auto;
-      height: calc(var(--tile-size) * 0.9);
-      padding: 10px 14px;
+      height: calc(var(--tile-size) * 1);
+      padding: 5px 5px;
+      padding-top: 5px;
+      padding-bottom: 3px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -40,16 +46,16 @@ def default_anagrams_css():
     /* ---------- Individual tile ---------- */
     .tile {
       position: relative;
-      width: var(--tile-size);
-      height: calc(var(--tile-size) * 1.04);
+      width: calc(var(--tile-size) * 1.1);
+      height: calc(var(--tile-size) * 1.1);
       border-radius: var(--tile-radius);
 
       display: grid;
       place-items: center;
                 
       font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
-      font-size: calc(var(--tile-size) * 0.7);
-      line-height: 1.5;
+      font-size: calc(var(--tile-size) * 0.8);
+      line-height: 1;
       color: var(--tile-text);
       letter-spacing: 0em ;
 
@@ -62,11 +68,13 @@ def default_anagrams_css():
 
       box-shadow:
         0 6px 10px var(--tile-shadow),
-        inset 0 1px 0 rgba(255,255,255,0.15),
-        inset 0 -1px 0 rgba(0,0,0,0.25);
+        inset 0 1px 0 rgba(229,219,255,0.15),
+        inset 0 -1px 0 rgba(11,4,33,0.25);
 
       border-bottom: 3px solid var(--tile-edge);
       }
+
+      
 
     /* ----- Back of card ----- */
 
