@@ -24,6 +24,12 @@ def extract_alphagrams_from_file(filepath):
             alphagrams.add(alphagram)
     return sorted(alphagrams)
 
+def sort_consonants_first(s):
+    vowels = set('AEIOU')
+    consonants = ''.join(sorted(c for c in s if c not in vowels))
+    vowel_part = ''.join(sorted(c for c in s if c in vowels))
+    return consonants + vowel_part
+
 def build_cards(input_file, db_path):
     alphagrams = extract_alphagrams_from_file(input_file)
     with sqlite3.connect(db_path) as conn:
@@ -50,11 +56,9 @@ def bucketed_tags(tags, length, label, order, bucket_sizes=(500, 1000, 5000, 100
         end = start + size - 1
         tags.add(f"len{length}::{label}::{start}-{end}")
 
-def build_front_html(alphagram, first_word):
+def build_front_html(sorted_alphagram, alphagram, first_word):
     """attempting to make cool tiles that you can click on to go to the word's Neighborhood page """
-
-    spans = "".join(f"<span class='tile'><span class='letter'>{c}</span></span>" for c in alphagram)
-
+    spans = "".join(f"<span class='tile'><span class='letter'>{c}</span></span>" for c in sorted_alphagram)
     return (
         f"<a class='alphalink' "
         f"href='https://www.studycade.com/#/neighborhood?query={alphagram}&word={first_word}'>"
@@ -86,15 +90,16 @@ def build_card_data(db_conn, alphagram_list):
 
         first = rows[0] # get repeating info for all anagrams in first instance of anagram
         first_word = first["word"]
-        front_html = build_front_html(alphagram, first_word)
+        sorted_alphagram = sort_consonants_first(alphagram)
+        front_html = build_front_html(sorted_alphagram, alphagram, first_word)
         length = first["length"]
         num_anagrams = first["num_anagrams"]
         num_vowels = first["num_vowels"]
         point_value = first["point_value"]
         num_unique_letters = first["num_unique_letters"]
 
+        # General tags
         tags.add(f"anagrams_{num_anagrams}")
-
         tags.add(f"len{length}")
 
         if any(c in alphagram for c in 'JQXZ'):
@@ -152,7 +157,7 @@ def build_card_data(db_conn, alphagram_list):
             if is_back_hook:
                 display_word = display_word + '·'
 
-            #Play/Prob order strings
+            # Play/Prob order strings
             main_order = play_order if length in (4, 5, 6) else prob_order #still want to display prob and play orders
             order_str = "" if main_order is None else str(main_order)
             
@@ -213,6 +218,8 @@ def build_card_data(db_conn, alphagram_list):
         anagrams = ", ".join(words)
 
         card_dict[alphagram] = {
+            "alphagram": alphagram,
+            "sorted_alphagram": sorted_alphagram,
             "front_html": front_html,
             "entries": entry_lines,
             "anagrams": anagrams,
@@ -240,12 +247,11 @@ def _len_aware_sort_key(item):
     if L >= 7:
         s = data["prob_orders"]
         prob_key = int(s.split(",")[0].strip()) if s else 10**9
-        return (0, prob_key, alphagram)   # bucket 0 = 7+ sorted by probability
+        return (0, prob_key, data["sorted_alphagram"])   # bucket 0 = 7+ sorted by probability
     else:
         s = data["play_orders"]
         play_key = int(s.split(",")[0].strip()) if s else 10**9
-        return (1, play_key, alphagram)   # bucket 1 = <7 sorted by playability
-
+        return (1, play_key, data["sorted_alphagram"])   # bucket 1 = <7 sorted by playability
 
 def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None = None) -> str:
     """
@@ -268,7 +274,9 @@ def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None
         for alphagram, data in items:
             back_html = _back_html_from_data(data)
             tags_str = tags_to_str(data["tags"])
+            sorted_alphagram = data["sorted_alphagram"],
             writer.writerow([
+                sorted_alphagram,
                 alphagram,
                 data["front_html"],
                 back_html,
@@ -311,6 +319,7 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         1607392319,
         'Anagram Model',
         fields=[
+            {'name': 'SortedAlphagram'},
             {'name': 'Alphagram'},
             {'name': 'FrontHTML'},
             {'name': 'Back'},
@@ -344,6 +353,7 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         note = genanki.Note(
             model=model,
             fields=[
+                data['sorted_alphagram'],
                 alphagram,
                 data['front_html'],
                 back,
