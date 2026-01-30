@@ -1,14 +1,93 @@
 def default_anagrams_css():
     return """
-    .card {
-    font-family: "MS Shell Dlg 2", "Tahoma", sans-serif;
-    font-size: 28px;
-    text-align: center;
+  @font-face {
+        font-family: myfont;
+        src: url("_protiles.ttf");
+      }
+
+  /* ---------- Set up ---------- */
+  .card {
+    --rack-max-width: 600px;         
+    --tile-size: 40px;
+    --tile-gap: 2px;
+    --tile-radius: 5px;
+
+    /* CoCo tiles */
+  --tile-face: #531882;
+  --tile-edge: #2B0747;
+  --tile-text: #f7f7f7;
+  --tile-shadow: rgba(23,3,38,0.35);
+  }
+
+  a {
+  text-decoration: none;
+  }
+
+  /* ------- Rack container for when i get myself together -------- */
+  .rack {
+    position: relative;
+    max-width: var(--rack-max-width);
+    margin: 0 auto;
+    height: calc(var(--tile-size) * 0.9);
+    padding: 5px 5px;
+    padding-top: 5px;
+    padding-bottom: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+
+  /* ---------- Tile row ---------- */
+  .tiles {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: var(--tile-gap);
+  }
+
+  /* ---------- Individual tile ---------- */
+  .tile {
+    position: relative;
+    width: calc(var(--tile-size) * 1.1);
+    height: calc(var(--tile-size) * 1.1);
+    border-radius: var(--tile-radius);
+
+    display: grid;
+    place-items: center;
+              
+    font-family: myfont;
+    font-size: calc(var(--tile-size) * 1);
+    line-height: 1;
+    color: var(--tile-text);
+    letter-spacing: 0em ;
+
+    background:
+      linear-gradient(to right, 
+        var(--tile-edge) 0%, 
+        var(--tile-face) 12%, 
+        var(--tile-face) 88%, 
+        var(--tile-edge) 100%);
+
+    box-shadow:
+      0 5px 8px var(--tile-shadow),
+      inset 0 1px 0 rgba(239,224,255,0.15),
+      inset 0 -1px 0 rgba(17,2,28,0.25);
+
+    
+    border-bottom: 3px solid var(--tile-edge);
     }
+
+  .letter {
+  padding-top: 6px;
+  padding-left: 6px;
+  }
+
+/* ----- Back of card ----- */
 
     .entry-table {
     font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
-    font-size: 18px;
+    font-size: 14px;
     display: grid;
     /* 4 columns : FRONT HOOKS | ANAGRAM | BACK HOOKS | DEFINITION */
     grid-template-columns:  minmax(0ch, max-content) 
@@ -51,8 +130,8 @@ def default_anagrams_css():
     }
         """
 
-def custom_anagrams_css():
-    return default_anagrams_css() + """
+def custom_colors_css():
+    return """
 
      /* ================================
    OPTIONAL CUSTOM ANAGRAMS STYLES
@@ -234,6 +313,9 @@ def custom_anagrams_css():
 
     }
     """
+
+def custom_anagrams_css():
+    return default_anagrams_css() + "\n\n" + custom_colors_css()
 
 def default_leaves_css():
     return """.card { 

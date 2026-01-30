@@ -10,7 +10,7 @@ class AnkiDeckBuilder(ctk.CTk):
         super().__init__()
 
         self.title("Anki Deck Builder")
-        self.geometry("400x600")
+        self.geometry("400x700")
         self.resizable(True, True)
 
         # State variables
@@ -23,6 +23,7 @@ class AnkiDeckBuilder(ctk.CTk):
         self.input_file_path = None
         self.last_input_dir = load_last_folder("input")
         self.db_path_var.set(load_last_folder("last_db_folder") or "")
+        self.output_format_var = ctk.StringVar(value="APKG (Anki deck)")  # APKG (Anki deck) | CSV | Both
         self.save_folder_path = load_last_folder()
 
         # Clear save_folder_path if the folder was deleted
@@ -73,6 +74,16 @@ class AnkiDeckBuilder(ctk.CTk):
             justify="left"   
         ) # Align multi-line text to the left
         self.save_folder_label.pack(padx=20, pady=(7, 0), fill="x")
+
+        # Output format
+        ctk.CTkLabel(self, text="Output format:", anchor="w").pack(padx=20, pady=(15, 0), fill="x")
+        self.format_menu = ctk.CTkOptionMenu(
+            self,
+            values=["APKG (Anki deck)", "CSV", "Both"],
+            variable=self.output_format_var
+        )
+        self.format_menu.pack(padx=20, fill="x")
+
 
         # Create Deck
         self.create_button = ctk.CTkButton(self, text="Create Deck", command=self.create_deck)
@@ -143,6 +154,16 @@ class AnkiDeckBuilder(ctk.CTk):
             self.db_path_var.set("")  # Clear the stored DB path
             self.db_file_path_display.configure(text="")
 
+        # Restrict output formats based on deck type
+        formats = self._allowed_formats_for(selected_type)
+        self.format_menu.configure(values=formats)
+        if self.output_format_var.get() not in formats:
+            self.output_format_var.set(formats[0])  # snap to a valid choice
+
+    def _allowed_formats_for(self, deck_type: str):
+        deck_type = deck_type.lower()
+        return ["APKG (Anki deck)", "CSV", "Both"] 
+
     def select_db_file(self):
         # Load the last used .db folder, fallback to current directory
         initial_dir = load_last_folder("last_db_folder") or os.getcwd()
@@ -172,6 +193,7 @@ class AnkiDeckBuilder(ctk.CTk):
     def create_deck(self):
         name = self.deck_name_var.get().strip()
         deck_type = self.deck_type_var.get().lower()
+        fmt = self.output_format_var.get()
 
         if not name:
             messagebox.showerror("Missing Info", "Please enter a deck name.")
@@ -189,14 +211,28 @@ class AnkiDeckBuilder(ctk.CTk):
             save_path = default_folder
 
         try:
+            saved_files = []
+
             if deck_type == "anagrams":
                 db_path = self.db_path_var.get()
                 if not db_path:
                     messagebox.showerror("Missing Database", "Anagrams require a .db file.")
                     return
+
+                # Build the data once
                 cards = anagram_deck_builder.build_cards(self.input_file_path, db_path)
-                use_custom_css = self.use_anagrams_css_var.get()
-                anagram_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
+
+                # APKG?
+                if fmt in ("APKG (Anki deck)", "Both"):
+                    use_custom_css = self.use_anagrams_css_var.get()
+                    apkg_path = anagram_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
+                    saved_files.append(apkg_path)
+
+
+                # CSV?
+                if fmt in ("CSV", "Both"):
+                    csv_path = anagram_deck_builder.write_csv_for_anki(cards, name, save_folder=save_path)
+                    saved_files.append(csv_path)
 
             elif deck_type == "definitions":
                 db_path = self.db_path_var.get()
@@ -205,15 +241,34 @@ class AnkiDeckBuilder(ctk.CTk):
                     return
                 cards = defs_deck_builder.parse_file(self.input_file_path, db_path)
                 use_custom_css = self.use_defs_css_var.get()
-                defs_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
+
+                if fmt in ("APKG (Anki deck)", "Both"):
+                    defs_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
+                    saved_files.append(os.path.join(save_path, f"{name}.apkg"))
+
+                if fmt in ("CSV", "Both"):
+                    csv_path = defs_deck_builder.write_csv_for_anki(cards, name, save_folder=save_path)
+                    saved_files.append(csv_path)
+
 
             elif deck_type == "leaves":
                 cards = leaves_deck_builder.parse_file(self.input_file_path)
                 use_custom_css = self.use_leaves_css_var.get()
-                leaves_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
+
+                if fmt in ("APKG (Anki deck)", "Both"):
+                    leaves_deck_builder.create_anki_deck(cards, name, save_folder=save_path, use_custom_css=use_custom_css)
+                    saved_files.append(os.path.join(save_path, f"{name}.apkg"))
+
+                if fmt in ("CSV", "Both"):
+                    csv_path = leaves_deck_builder.write_csv_for_anki(cards, name, save_folder=save_path)
+                    saved_files.append(csv_path)
+
     
-            self.status_text.set("Anki deck successfully generated!")
-            self.status_label.configure(text_color="white")
+            if saved_files:
+                msg = "Success! Generated\n" + "\n".join(saved_files)
+                self.status_text.set(msg)
+                self.status_label.configure(text_color="white")
+
         except Exception as e:
             self.status_text.set(f"Error: {str(e)}")
             self.status_label.configure(text_color="red")
