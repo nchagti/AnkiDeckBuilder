@@ -79,7 +79,7 @@ def default_anagrams_css():
     }
 
   .letter {
-  padding-top: 6px;
+  padding-top: 4px;
   padding-left: 6px;
   }
 
