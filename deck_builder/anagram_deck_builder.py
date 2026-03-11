@@ -354,6 +354,13 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         )
         deck.add_note(note)
 
-    genanki.Package(deck).write_to_file(output_file)
+    font_path = Path(__file__).resolve().parent / "assets" / "_protiles.ttf"
+    package = genanki.Package(deck)
+    print(f"Font_path: {font_path}")
+    print(f"Font exists: {font_path.exists()}")
+    if font_path.exists():
+        package.media_files = [str(font_path)]
+        print(f"media_files set to: {package.media_files}")
+    package.write_to_file(output_file)
     print(f"Anki deck saved to: {output_file}")
-
+    return output_file
