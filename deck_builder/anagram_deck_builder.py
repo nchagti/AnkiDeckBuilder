@@ -6,7 +6,9 @@ from .common import make_deck_id, parse_definition, POS_MAP
 from .anki_css import custom_anagrams_css, default_anagrams_css, custom_colors_css
 import csv
 from pathlib import Path
+import re
 
+font_path = Path(__file__).resolve().parent / "assets" / "_protiles.ttf"
 
 def extract_alphagrams_from_file(filepath):
     """
@@ -24,11 +26,40 @@ def extract_alphagrams_from_file(filepath):
             alphagrams.add(alphagram)
     return sorted(alphagrams)
 
-def build_cards(input_file, db_path):
+def sort_consonants_first(alphagram):
+    vowels = set('AEIOU')
+    consonants = ''.join(sorted(c for c in alphagram if c not in vowels))
+    vowel_part = ''.join(sorted(c for c in alphagram if c in vowels))
+    return consonants + vowel_part
+
+def sort_vowels_first(alphagram):
+    vowels = set('AEIOU')
+    vowel_part = ''.join(sorted(c for c in alphagram if c in vowels))
+    consonants = ''.join(sorted(c for c in alphagram if c not in vowels))
+    return vowel_part + consonants
+
+def sort_tiles(alphagram, order='alpha'):
+    """Rearranged according to order (alphabetical, consonants first, vowels first)
+    """
+    if order == 'cons':
+        return sort_consonants_first(alphagram)
+    elif order == 'vow':
+        return sort_vowels_first(alphagram)
+    else:  
+        return alphagram
+
+def _annotate_definition(definition: str, lexicon_lookup: dict) -> str:
+    def replace(match):
+        word = match.group(0)
+        sym = lexicon_lookup.get(word, "")
+        return word + sym
+    return re.sub(r'[A-Z]{2,}', replace, definition)
+
+def build_cards(input_file, db_path, tile_order='alpha', show_lexicon_symbols=False):
     alphagrams = extract_alphagrams_from_file(input_file)
     with sqlite3.connect(db_path) as conn:
         conn.row_factory = sqlite3.Row
-        return build_card_data(conn, alphagrams)
+        return build_card_data(conn, alphagrams, tile_order=tile_order, show_lexicon_symbols=show_lexicon_symbols)
 
 def batch_query_by_alphagram(conn, alphagrams):
     cursor = conn.cursor()
@@ -50,11 +81,9 @@ def bucketed_tags(tags, length, label, order, bucket_sizes=(500, 1000, 5000, 100
         end = start + size - 1
         tags.add(f"len{length}::{label}::{start}-{end}")
 
-def build_front_html(alphagram, first_word):
+def build_front_html(sorted_alphagram, alphagram, first_word):
     """attempting to make cool tiles that you can click on to go to the word's Neighborhood page """
-
-    spans = "".join(f"<span class='tile'><span class='letter'>{c}</span></span>" for c in alphagram)
-
+    spans = "".join(f"<span class='tile'><span class='letter'>{c}</span></span>" for c in sorted_alphagram)
     return (
         f"<a class='alphalink' "
         f"href='https://www.studycade.com/#/neighborhood?query={alphagram}&word={first_word}'>"
@@ -67,7 +96,7 @@ def build_front_html(alphagram, first_word):
 def _back_html_from_data(data: dict) -> str:
     return "<div class='entry-table'>" + "\n".join(data["entries"]) + "</div>"
 
-def build_card_data(db_conn, alphagram_list):
+def build_card_data(db_conn, alphagram_list, tile_order='alpha', show_lexicon_symbols=False):
     card_dict = {}
     rows = batch_query_by_alphagram(db_conn, alphagram_list)
 
@@ -75,6 +104,13 @@ def build_card_data(db_conn, alphagram_list):
     rows_by_alphagram = {}
     for row in rows:
         rows_by_alphagram.setdefault(row["alphagram"], []).append(row)
+
+    lexicon_lookup = {}
+    if show_lexicon_symbols:
+        cursor = db_conn.cursor()
+        cursor.execute("SELECT word, lexicon_symbols FROM words WHERE lexicon_symbols IS NOT NULL AND lexicon_symbols != ''")
+        lexicon_lookup = {row["word"]: row["lexicon_symbols"] for row in cursor.fetchall()}
+
 
     for alphagram in alphagram_list:
         rows = rows_by_alphagram.get(alphagram)
@@ -86,15 +122,16 @@ def build_card_data(db_conn, alphagram_list):
 
         first = rows[0] # get repeating info for all anagrams in first instance of anagram
         first_word = first["word"]
-        front_html = build_front_html(alphagram, first_word)
+        sorted_alphagram = sort_tiles(alphagram, tile_order)
+        front_html = build_front_html(sorted_alphagram, alphagram, first_word)
         length = first["length"]
         num_anagrams = first["num_anagrams"]
         num_vowels = first["num_vowels"]
         point_value = first["point_value"]
         num_unique_letters = first["num_unique_letters"]
 
+        # General tags
         tags.add(f"anagrams_{num_anagrams}")
-
         tags.add(f"len{length}")
 
         if any(c in alphagram for c in 'JQXZ'):
@@ -102,19 +139,19 @@ def build_card_data(db_conn, alphagram_list):
 
         if (length == 7 and num_vowels >= 4):
             tags.add("len7::vowels::4plus")
-            tags.add("vowel_dump")
+            tags.add("len7::vowel_dump")
         elif (length == 8 and num_vowels >= 5):
             tags.add("len8::vowels::5plus")
-            tags.add("vowel_dump")
+            tags.add("len8::vowel_dump")
         elif (length == 4 and num_vowels >= 3):
             tags.add("len4::vowels::3plus")
-            tags.add("vowel_dump")
+            tags.add("len4::vowel_dump")
         elif (length == 5 and num_vowels >= 4):
             tags.add("len5::vowels::4plus")
-            tags.add("vowel_dump")
+            tags.add("len5::vowel_dump")
         elif (length == 6 and num_vowels >= 4):
             tags.add("len6::vowels::4plus")
-            tags.add("vowel_dump")
+            tags.add("len6::vowel_dump")
 
         if num_vowels == 0:
             if 3 <= length <= 8:
@@ -142,17 +179,19 @@ def build_card_data(db_conn, alphagram_list):
                 disqualifying_letters = set('JQXZ')
                 if not any(c in word for c in disqualifying_letters):
                     if word[0] in high_five_letters or word[-1] in high_five_letters:
-                        tags.add("len5::high_five")
+                        tags.add("high_five")
 
-            
+            lexicon_syms = (row["lexicon_symbols"] or "").strip() if show_lexicon_symbols else ""
             # Add inner hook markers
             display_word = word
             if is_front_hook:
                 display_word = '·' + display_word
             if is_back_hook:
-                display_word = display_word + '·'
+                display_word = display_word + '·' + lexicon_syms
+            elif lexicon_syms:
+                display_word = display_word + lexicon_syms
 
-            #Play/Prob order strings
+            # Play/Prob order strings
             main_order = play_order if length in (4, 5, 6) else prob_order #still want to display prob and play orders
             order_str = "" if main_order is None else str(main_order)
             
@@ -160,7 +199,8 @@ def build_card_data(db_conn, alphagram_list):
             front_hooks_disp = _esc(front_hooks or "")
             back_hooks_disp  = _esc(back_hooks or "")
             word_disp        = _esc(display_word)
-            def_disp         = _esc(definition)
+            annotated_def     = _annotate_definition(definition, lexicon_lookup) if show_lexicon_symbols else definition
+            def_disp         = _esc(annotated_def)
 
 
             # Extract and map part of speech
@@ -213,6 +253,8 @@ def build_card_data(db_conn, alphagram_list):
         anagrams = ", ".join(words)
 
         card_dict[alphagram] = {
+            "alphagram": alphagram,
+            "sorted_alphagram": sorted_alphagram,
             "front_html": front_html,
             "entries": entry_lines,
             "anagrams": anagrams,
@@ -238,14 +280,13 @@ def _len_aware_sort_key(item):
     L = int(data["length"])
 
     if L >= 7:
-        s = data["prob_orders"]
-        prob_key = int(s.split(",")[0].strip()) if s else 10**9
-        return (0, prob_key, alphagram)   # bucket 0 = 7+ sorted by probability
+        order_str = data["prob_orders"]
+        prob_key = int(order_str.split(",")[0].strip()) if order_str else 10**9
+        return (0, prob_key, data["sorted_alphagram"])   # bucket 0 = 7+ sorted by probability
     else:
-        s = data["play_orders"]
-        play_key = int(s.split(",")[0].strip()) if s else 10**9
-        return (1, play_key, alphagram)   # bucket 1 = <7 sorted by playability
-
+        order_str = data["play_orders"]
+        play_key = int(order_str.split(",")[0].strip()) if order_str else 10**9
+        return (1, play_key, data["sorted_alphagram"])   # bucket 1 = <7 sorted by playability
 
 def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None = None) -> str:
     """
@@ -268,7 +309,9 @@ def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None
         for alphagram, data in items:
             back_html = _back_html_from_data(data)
             tags_str = tags_to_str(data["tags"])
+            sorted_alphagram = data["sorted_alphagram"]
             writer.writerow([
+                sorted_alphagram,
                 alphagram,
                 data["front_html"],
                 back_html,
@@ -311,6 +354,7 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         1607392319,
         'Anagram Model',
         fields=[
+            {'name': 'SortedAlphagram'},
             {'name': 'Alphagram'},
             {'name': 'FrontHTML'},
             {'name': 'Back'},
@@ -344,6 +388,7 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         note = genanki.Note(
             model=model,
             fields=[
+                data['sorted_alphagram'],
                 alphagram,
                 data['front_html'],
                 back,
@@ -363,7 +408,13 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         )
         deck.add_note(note)
 
-    genanki.Package(deck).write_to_file(output_file)
+    package = genanki.Package(deck)
+    print(f"Font_path: {font_path}")
+    print(f"Font exists: {font_path.exists()}")
+    if font_path.exists():
+        package.media_files = [str(font_path)]
+        print(f"media_files set to: {package.media_files}")
+    package.write_to_file(output_file)
     print(f"Anki deck saved to: {output_file}")
     return output_file
 

@@ -11,7 +11,10 @@ def main():
                         choices=['leaves', 'defs', 'anagrams'], help='Type of deck to build')
     parser.add_argument('--db', help='Path to lexicon .db file (required for anagrams and defs type)')
     parser.add_argument('--color', '-c', action='store_true', help='Color-code Anagrams deck answers by number of anagrams, Leaves deck questions by leave value range, and Definitions deck answers by part of speech.')
+    parser.add_argument('--tile-order', choices=['alpha', 'cons', 'vow'], default='alpha', help='Tile display order (alphabetical, consonants first, or vowels first) for Anagrams deck. Alphabetical sort by default')
     parser.add_argument('--output', '-o', default='Anki Decks', help='Output folder for the .apkg file')
+    parser.add_argument('--lexicon-symbols', action='store_true',
+                        help='Show lexicon symbols on anagram cards. Requires the lexicon_symbols column to be pre-populated in your .db file. Ignored for other deck types.')
     parser.add_argument('--format', '-f', choices=['apkg', 'csv', 'both'], default='apkg', help='Output format: apkg (default), csv, or both')
 
     args = parser.parse_args()
@@ -20,8 +23,12 @@ def main():
 
     saved_files = []
 
+    if args.type in ('anagrams', 'defs') and not args.db:
+        parser.error(f"--db is required for {args.type} deck types")
+
     if args.type == 'anagrams':
-        cards = anagram_deck_builder.build_cards(args.input, args.db)
+        cards = anagram_deck_builder.build_cards(args.input, args.db, tile_order=args.tile_order, show_lexicon_symbols=args.lexicon_symbols)
+
         if args.format in ('apkg', 'both'):
             path = anagram_deck_builder.create_anki_deck(
                 cards, args.deck_name, save_folder=args.output, use_custom_css=args.color

@@ -1,13 +1,16 @@
 def default_anagrams_css():
     return """
-    /* ---------- Set up ---------- */
-    .card {
-      font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
-      font-size: 20px;
-      --rack-max-width: 600px;         
-      --tile-size: 40px;
-      --tile-gap: 2px;
-      --tile-radius: 4px;
+    @font-face {
+        font-family: myfont;
+        src: url("_protiles.ttf");
+      }
+
+  /* ---------- Set up ---------- */
+  .card {
+    --rack-max-width: 600px;         
+    --tile-size: 40px;
+    --tile-gap: 2px;
+    --tile-radius: 5px;
 
       /* Dark tiles */
       --tile-face: #15083b;
@@ -53,8 +56,8 @@ def default_anagrams_css():
       display: grid;
       place-items: center;
                 
-      font-family: 'MS Shell Dlg 2', Tahoma, sans-serif;
-      font-size: calc(var(--tile-size) * 0.8);
+      font-family: myfont;
+      font-size: calc(var(--tile-size) * 1);
       line-height: 1;
       color: var(--tile-text);
       letter-spacing: 0em ;
@@ -74,7 +77,10 @@ def default_anagrams_css():
       border-bottom: 3px solid var(--tile-edge);
       }
 
-      
+    .letter {
+    padding-top: 6px;
+    padding-left: 6px;
+    }  
 
     /* ----- Back of card ----- */
 
