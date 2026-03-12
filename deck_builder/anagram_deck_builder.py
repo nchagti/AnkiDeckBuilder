@@ -334,6 +334,7 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         back = "<div class='entry-table'>" + "\n".join(data['entries']) + "</div>"
         note = genanki.Note(
             model=model,
+            guid=genanki.guid_for(alphagram, deck_name),
             fields=[
                 alphagram,
                 data['front_html'],
