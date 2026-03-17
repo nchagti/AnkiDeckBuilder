@@ -23,7 +23,7 @@ Build study decks using Anki — the most flexible, customizable, and intelligen
 If that's not enough, unlike other tools:
 * Anki lets you upload **100k+ questions** per deck (so you can add the *entire dictionary* to your cardbox).
 * Using the Anki Deck Builder, you can study **anagrams, leave values, *and* definitions**.
-* The Anagrams Deck mobilizes [Anki's superpowered search feature](https://docs.ankiweb.net/searching.html), allowing you to search for *hyper-specific queries* like "all top 1500 probability 7-letter words that have only one anagram and are also nouns" **on your phone**. In this case, you'd search for ``tag:len7::prob::1-500 tag::len7::prob::501-1000 tag:len7::prob::1001-1500 tag:anagrams_1 tag:noun``.
+* The Anagrams Deck mobilizes [Anki's superpowered search feature](https://docs.ankiweb.net/searching.html), allowing you to search for *hyper-specific queries* like "all top 5000 probability 7-letter words that have only one anagram and are also nouns" **on your phone**. In this case, you'd search for ``tag:len7::prob::1-5000 tag:anagrams_1 tag:noun``.
 
 ## Running the Anki Deck Builder
 There are a few ways to run the deck builder on your computer.
@@ -68,12 +68,12 @@ The Anki Deck Builder **automatically generates tags and fields** for each deck 
         - **For example**, if you know you want to learn the top 1000 probability 7- and 8-letter bingos and JQXZ words, but you want to prioritize the bingos, then you can use the tags to create three subdecks within your Main Deck: one with the bingos, one with the JQXZ words, and one with all other words in your Main Deck.
     
 - **Fields by deck type**: Use these fields to search, filter or sort your decks
-   - *Anagrams Deck*: question, answer, length, number of anagrams, number of vowels, number of unique letters, point value, probability orders, playability orders, number of anagrams, probability sort key, playability sort key
+   - *Anagrams Deck*: question, answer, front hooks, back hooks, length, number of anagrams, number of vowels, number of unique letters, point value, probability orders, playability orders, number of anagrams, probability sort key, playability sort key
    - *Leaves Deck*: leave, leave value, leave value range 
    - *Definitions Deck*: word, definition 
    
 - **Tags by deck type**: Use these tags to search and filter your decks
-   - *Anagrams Deck*: length, number of anagrams, number of vowels, probability order (individual), probabliity order (range), playability order (individual), playability order (range), part of speech, alternate spelling, contains JQXZ 
+   - *Anagrams Deck*: length, number of anagrams, number of vowels, probability order (individual), probabliity order (range), playability order (individual), playability order (range), part of speech, alternate spelling, contains JQXZ, High Fives, vowel dumps, consonant dumps 
    - *Leaves Deck*: length, number of blanks, leave value range 
    - *Definitions Deck*: part of speech, alternate spellings, inner hook 
 
@@ -119,14 +119,14 @@ It's pretty simple to create your own deck. To create [the deck from the example
     - MacOS and Linux (Collins Zyzzyva): `~/.collinszyzzyva/lexicons`
     - MacOS and Linux (NASPA Zyzzyva): ```~/Zyzzyva/lexicons```
   
-4. Choose if you would like the custom color-coding by number of anagrams, the location where you'd like to save your Anki deck, and the output file format (`.apkg`). Click `Create Deck`. This will generate your Anki deck. 
+4. Choose if you would like the custom color-coding by number of anagrams, your tile-order, if you want lexicon symbols, the location where you'd like to save your Anki deck, and the output file format (`.apkg`). Click `Create Deck`. This will generate your Anki deck. 
     > You will not need to use the CSV output unless you're making changes to the contents of your pre-existing cards
         
 5. Open Anki on your computer, click `Import File`, and choose the deck (`.apkg`) that you just generated. 
 
 6. **After** importing your Main Deck, click `Create Deck`. Name this deck `<YourMainDeckName>::<FirstSubdeckName>`. This will create an empty subdeck for your Main Deck. 
 
-7. Select your Main deck and click on Browse. In the search field, use the tags or fields to start filtering your deck. In this case, use the following search: `deck:<YourMainDeckName> tag:len7::prob::1-500 OR tag:len7::prob::501-1000 OR tag:len8::prob::1-500 OR tag:len8::prob::501-1000`
+7. Select your Main deck and click on Browse. In the search field, use the tags or fields to start filtering your deck. In this case, use the following search: `deck:<YourMainDeckName> tag:len7::prob::1-1000 OR tag:len7::prob::1001-1500 OR tag:len8::prob::1-1000 OR tag:len8::prob::1001-1500`
 
 8. Select all questions (`Ctrl + A` on Windows or `Cmd + A` on MacOS), right click on the questions, and click `Change Deck`. Choose the subdeck that you just created to move all top 1000 probable 7 and 8-letter words into it.
 
@@ -155,6 +155,8 @@ Here’s a breakdown of the available arguments for `cli_deck_builder.py`:
 | `-t`  | `--type`      |  Yes     | —            | Deck type: `leaves`, `defs`, or `anagrams`.                                                            |
 | —     | `--db`        | Sometimes | —            | Path to lexicon `.db` file (required for `anagrams` and `defs`).                                       |
 | `-c`     | `--color`     | No        | `False`      | Enable color-coding: number of anagrams (Anagrams), leave value ranges (Leaves), or part of speech (Defs). |
+| —     | `--tile-order` | No       | `alpha`      | Tile display order for Anagrams decks: `alpha` (alphabetical), `cons` (consonants first), or `vow` (vowels first). |
+| —     | `--lexicon-symbols` | No  | `False`      | Show lexicon symbols on anagram cards. Requires the `lexicon_symbols` column to be pre-populated in your `.db` file. Ignored for other deck types. |
 | `-o`  | `--output`    | No        | `Anki Decks`  | Output folder for generated files. ``Anki Decks`` folder created in working directory if no output path is provided.                                                                     |
 | `-f`  | `--format`    | No        | `apkg`       | Output format: `apkg` (default), `csv`, or `both`.                                                     |
 
