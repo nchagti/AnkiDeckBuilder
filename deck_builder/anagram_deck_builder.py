@@ -1,4 +1,5 @@
 import os
+import sys
 import sqlite3
 import genanki
 from html import escape as _esc
@@ -8,7 +9,14 @@ import csv
 from pathlib import Path
 import re
 
-font_path = Path(__file__).resolve().parent / "assets" / "_protiles.ttf"
+# When running as a PyInstaller .exe, bundled files land in sys._MEIPASS.
+# When running as a plain .py script, they live next to this source file.
+if getattr(sys, 'frozen', False):
+    _assets_base = Path(sys._MEIPASS)
+else:
+    _assets_base = Path(__file__).resolve().parent
+
+font_path = _assets_base / "assets" / "_protiles.ttf"
 
 def extract_alphagrams_from_file(filepath):
     """
@@ -162,6 +170,8 @@ def build_card_data(db_conn, alphagram_list, tile_order='alpha', show_lexicon_sy
 
         tags.add(f"len{length}::vowels::{num_vowels}")
 
+        hooks_by_word = {}
+
         # Sort entries
         for row in sorted(rows, key=lambda r: r["word"]): #sorting words alphabetically
             word = row["word"]
@@ -169,6 +179,7 @@ def build_card_data(db_conn, alphagram_list, tile_order='alpha', show_lexicon_sy
             prob_order = row["probability_order2"]
             front_hooks = row["front_hooks"] or ''
             back_hooks = row["back_hooks"] or ''
+            hooks_by_word[word] = (front_hooks, back_hooks)
             is_front_hook = row["is_front_hook"]
             is_back_hook = row["is_back_hook"]
             definition = row["definition"]
@@ -252,6 +263,12 @@ def build_card_data(db_conn, alphagram_list, tile_order='alpha', show_lexicon_sy
         words = sorted([r["word"] for r in rows if r["word"]])
         anagrams = ", ".join(words)
 
+        # Pool all unique hook letters across every anagram in this card, sorted A-Z
+        all_front_hook_letters = sorted(set("".join(hooks[0] for hooks in hooks_by_word.values())))
+        all_back_hook_letters  = sorted(set("".join(hooks[1] for hooks in hooks_by_word.values())))
+        front_hooks_field = "".join(all_front_hook_letters)
+        back_hooks_field  = "".join(all_back_hook_letters)
+
         card_dict[alphagram] = {
             "alphagram": alphagram,
             "sorted_alphagram": sorted_alphagram,
@@ -268,7 +285,9 @@ def build_card_data(db_conn, alphagram_list, tile_order='alpha', show_lexicon_sy
             "prob_sort_key": prob_sort_key,
             "play_sort_key": play_sort_key,
             "num_unique_letters": str(num_unique_letters),
-            "point_value": str(point_value)
+            "point_value": str(point_value),
+            "front_hooks_field": front_hooks_field,
+            "back_hooks_field": back_hooks_field,
             }
 
     return card_dict
@@ -317,6 +336,8 @@ def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None
                 back_html,
                 data["anagrams"],
                 data["first_word"],
+                data["front_hooks_field"],
+                data["back_hooks_field"],
                 data["length"],
                 data["num_vowels"],
                 data["num_unique_letters"],
@@ -360,6 +381,8 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
             {'name': 'Back'},
             {'name': 'Anagrams'},
             {'name': 'FirstWord'},
+            {'name': 'FrontHooks'},
+            {'name': 'BackHooks'},
             {'name': 'Length'},
             {'name': 'NumVowels'},
             {'name': 'NumUniqueLetters'},
@@ -394,6 +417,8 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
                 back,
                 data['anagrams'],
                 data['first_word'],
+                data['front_hooks_field'],
+                data['back_hooks_field'],
                 data['length'],
                 data['num_vowels'],
                 data['num_unique_letters'],
