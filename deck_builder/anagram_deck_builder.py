@@ -276,6 +276,8 @@ def build_card_data(db_conn, alphagram_list, tile_order='alpha', show_lexicon_sy
             "entries": entry_lines,
             "anagrams": anagrams,
             "first_word": first_word,
+            "front_hooks_field": front_hooks_field,
+            "back_hooks_field": back_hooks_field,
             "tags": sorted(tags),
             "length": str(length),
             "num_vowels": str(num_vowels),
@@ -285,9 +287,7 @@ def build_card_data(db_conn, alphagram_list, tile_order='alpha', show_lexicon_sy
             "prob_sort_key": prob_sort_key,
             "play_sort_key": play_sort_key,
             "num_unique_letters": str(num_unique_letters),
-            "point_value": str(point_value),
-            "front_hooks_field": front_hooks_field,
-            "back_hooks_field": back_hooks_field,
+            "point_value": str(point_value),            
             }
 
     return card_dict
