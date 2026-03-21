@@ -9,3 +9,6 @@ __pycache__/
 
 # Ignore zip file
 *.zip
+
+#Ignore claude
+CLAUDE.md
