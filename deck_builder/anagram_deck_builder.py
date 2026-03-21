@@ -191,7 +191,7 @@ def control_buttons():
         return;
     }
 
-    // Same letter as previous — flash to purple first so the change is visible
+    // Check if we're cycling through the same letter again
     var sameAsPrev = hintIndex >= 0
         && hintIndex < firstLetters.length
         && firstLetters[nextIndex] === firstLetters[hintIndex];
@@ -379,8 +379,8 @@ def build_card_data(db_conn, alphagram_list, tile_order='alpha', show_lexicon_sy
         back_hooks_field  = "".join(all_back_hook_letters)
 
         card_dict[alphagram] = {
-            "alphagram": alphagram,
             "sorted_alphagram": sorted_alphagram,
+            "alphagram": alphagram,
             "front_html": front_html,
             "entries": entry_lines,
             "anagrams": anagrams,
@@ -439,8 +439,8 @@ def write_csv_for_anki(cards_dict: dict, deck_name: str, save_folder: str | None
             tags_str = tags_to_str(data["tags"])
             sorted_alphagram = data["sorted_alphagram"]
             writer.writerow([
-                sorted_alphagram,
                 alphagram,
+                sorted_alphagram,
                 data["front_html"],
                 back_html,
                 data["anagrams"],
@@ -484,8 +484,8 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         1607392319,
         'Anagram Model',
         fields=[
-            {'name': 'SortedAlphagram'},
             {'name': 'Alphagram'},
+            {'name': 'SortedAlphagram'},
             {'name': 'FrontHTML'},
             {'name': 'Back'},
             {'name': 'Anagrams'},
@@ -520,8 +520,8 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
         note = genanki.Note(
             model=model,
             fields=[
-                data['sorted_alphagram'],
                 alphagram,
+                data['sorted_alphagram'],
                 data['front_html'],
                 back,
                 data['anagrams'],
