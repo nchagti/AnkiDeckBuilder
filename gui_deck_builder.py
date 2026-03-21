@@ -26,7 +26,7 @@ def _ensure_tk_or_die():
     sys.exit(1)
 
 def _parse_requirements(req_path: Path) -> list[str]:
-    """Return distribution specifiers exactly as written (e.g., 'genanki==0.13.1')."""
+    """Return distribution specifiers exactly as written"""
     specs = []
     if not req_path.exists():
         return specs
@@ -39,10 +39,7 @@ def _parse_requirements(req_path: Path) -> list[str]:
 
 def _dist_name(spec: str) -> str:
     """
-    Extract distribution name from a requirement spec. Examples:
-      'customtkinter==5.2.2' -> 'customtkinter'
-      'PyYAML>=6.0'          -> 'PyYAML'
-    """
+    Extract distribution name from a requirement spec."""
     return re.split(r"[<>=;\[\s]", spec, maxsplit=1)[0]
 
 def _module_name_from_dist(dist: str) -> str:
@@ -119,21 +116,28 @@ from deck_builder import anagram_deck_builder, leaves_deck_builder, defs_deck_bu
 from utils import save_last_folder, load_last_folder
 import os
 
+# Padding constants shared across build_ui and on_deck_type_change
+LABEL_PADX = (15, 8)
+WIDGET_PADX = (0, 15)
+
+
 class AnkiDeckBuilder(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("Anki Deck Builder")
-        self.geometry("400x700")
+        self.geometry("575x610")
         self.resizable(True, True)
 
         # State variables
         self.deck_name_var = ctk.StringVar()
         self.deck_type_var = ctk.StringVar(value="Anagrams")
         self.db_path_var = ctk.StringVar()
-        self.use_anagrams_css_var = ctk.BooleanVar(value=False)     # Anagrams
-        self.use_leaves_css_var = ctk.BooleanVar(value=False)  # Leaves
-        self.use_defs_css_var = ctk.BooleanVar(value=False)    # Definitions
+        self.tile_order_var = ctk.StringVar(value="Alphabetical")
+        self.use_anagrams_css_var = ctk.BooleanVar(value=False)
+        self.use_leaves_css_var = ctk.BooleanVar(value=False)
+        self.use_defs_css_var = ctk.BooleanVar(value=False)
+        self.show_lexicon_symbols_var = ctk.BooleanVar(value=False)
         self.input_file_path = None
         self.last_input_dir = load_last_folder("input")
         self.db_path_var.set(load_last_folder("last_db_folder") or "")
@@ -150,81 +154,122 @@ class AnkiDeckBuilder(ctk.CTk):
         self.build_ui()
 
     def build_ui(self):
-        # Deck Name
-        ctk.CTkLabel(self, text="Deck Name:", anchor="w").pack(padx=20, pady=(15, 5), fill="x")
-        self.deck_name_entry = ctk.CTkEntry(self, placeholder_text="Create a deck name", textvariable=self.deck_name_var)
-        self.deck_name_entry.pack(padx=20, fill="x")
+        # Grid layout: col 0 = labels (fixed width), col 1 = controls (expanding)
+        # Each row: label inline to the left of its control — landscape-friendly form
+        self.columnconfigure(0, weight=0, minsize=150)
+        self.columnconfigure(1, weight=1)
 
-        # Deck Type
-        ctk.CTkLabel(self, text="Deck Type:", anchor="w").pack(padx=20, pady=(15, 0), fill="x")
-        self.deck_type_menu = ctk.CTkOptionMenu(self, values=["Anagrams", "Leaves", "Definitions"], variable=self.deck_type_var, command=self.on_deck_type_change)
+
+        # Row 0: Deck Name
+        ctk.CTkLabel(self, text="Deck Name:", anchor="w").grid(
+            row=0, column=0, padx=LABEL_PADX, pady=(15, 0), sticky="w")
+        self.deck_name_entry = ctk.CTkEntry(
+            self, placeholder_text="Create a deck name", textvariable=self.deck_name_var, width=250)
+        self.deck_name_entry.grid(row=0, column=1, padx=WIDGET_PADX, pady=(15, 0), sticky="w")
+
+        # Row 1: Deck Type
+        ctk.CTkLabel(self, text="Deck Type:", anchor="w").grid(
+            row=1, column=0, padx=LABEL_PADX, pady=(20, 0), sticky="w")
+        self.deck_type_menu = ctk.CTkOptionMenu(
+            self, values=["Anagrams", "Leaves", "Definitions"],
+            variable=self.deck_type_var, command=self.on_deck_type_change, width=250, anchor="center")
         self.deck_type_menu.set("Anagrams")
-        self.deck_type_menu.pack(padx=20, fill="x")
+        self.deck_type_menu.grid(row=1, column=1, padx=WIDGET_PADX, pady=(20, 0), sticky="w")
 
-        # Frame to hold dynamic checkboxes based on deck type
-        self.css_checkbox_frame = ctk.CTkFrame(self)
-        self.css_checkbox_frame.pack(padx=20, pady=(8, 0), fill="x")
+        # Row 2: Checkboxes — col 1 only, stacked in a transparent frame
+        self.css_checkbox_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.css_checkbox_frame.grid(row=2, column=1, padx=(0, 10), pady=(5, 0), sticky="ew")
 
-        # Input File
-        ctk.CTkLabel(self, text="Input File:", anchor="w").pack(padx=20, pady=(15, 0), fill="x")
-        self.input_file_button = ctk.CTkButton(self, text="Select File", command=self.select_input_file)
-        self.input_file_button.pack(padx=20, fill="x")
-        self.input_file_label = ctk.CTkLabel(self, text="", text_color="gray", anchor="w")
-        self.input_file_label.pack(padx=20, pady=(0, 7), fill="x")
+        # Color-code checkbox (deck-type specific, shown/hidden in on_deck_type_change)
+        self.anagrams_css_checkbox = ctk.CTkCheckBox(
+            self.css_checkbox_frame,
+            text="Color-code answers by number of anagrams",
+            variable=self.use_anagrams_css_var,
+            checkbox_width=18, checkbox_height=18)
+        self.leaves_css_checkbox = ctk.CTkCheckBox(
+            self.css_checkbox_frame,
+            text="Color-code questions by leave value range",
+            variable=self.use_leaves_css_var,
+            checkbox_width=18, checkbox_height=18)
+        self.defs_css_checkbox = ctk.CTkCheckBox(
+            self.css_checkbox_frame,
+            text="Color-code definitions by part of speech",
+            variable=self.use_defs_css_var,
+            checkbox_width=18, checkbox_height=18)
 
-        # Database File Picker (hidden if not Anagrams or Definitions type)
-        self.db_file_label_widget = ctk.CTkLabel(self, text="Lexicon Database:", anchor="w")
-        self.db_file_button = ctk.CTkButton(self, text="Select .db File", command=self.select_db_file)
-        self.db_file_path_display = ctk.CTkLabel(self, text="", text_color="gray", anchor="w")
+        # "Show lexicon symbols" row — checkbox with grey info text below
+        self._lex_sym_row = ctk.CTkFrame(self.css_checkbox_frame, fg_color="transparent")
+        self.show_lexicon_checkbox = ctk.CTkCheckBox(
+            self._lex_sym_row, text="Show lexicon symbols",
+            variable=self.show_lexicon_symbols_var,
+            checkbox_width=18, checkbox_height=18)
+        self.show_lexicon_checkbox.pack(anchor="w")
+        ctk.CTkLabel(
+            self._lex_sym_row,
+            text="Note: This requires the lexicon_symbols column in your .db file to be pre-populated. You can use Zyzzyva to choose your preferred lexicon symbols",
+            text_color="gray", anchor="w", wraplength=350, justify="left"
+        ).pack(anchor="w", padx=(25, 0), pady=(1, 2))
 
-        # Save Folder
-        self.save_folder_label_widget = ctk.CTkLabel(self, text="Select Folder to Save Anki Deck:", anchor="w")
-        self.save_folder_label_widget.pack(padx=17, fill="x")
-        self.save_folder_button = ctk.CTkButton(self, text="Choose Folder", command=self.select_save_folder)
-        self.save_folder_button.pack(padx=20, fill="x")
+        # Row 3: Tile Order (Anagrams only — gridded/removed in on_deck_type_change)
+        self.tile_order_label = ctk.CTkLabel(self, text="Tile order:", anchor="w")
+        self.tile_order_menu = ctk.CTkOptionMenu(
+            self, values=["Alphabetical", "Consonant-first", "Vowel-first"],
+            variable=self.tile_order_var, width=250, anchor="center")
+
+        # Row 4: Input File — button + selected-file label stacked in col 1
+        ctk.CTkLabel(self, text="Input file:", anchor="w").grid(
+            row=4, column=0, padx=LABEL_PADX, pady=(14, 0), sticky="nw")
+        _if_frame = ctk.CTkFrame(self, fg_color="transparent")
+        _if_frame.grid(row=4, column=1, padx=WIDGET_PADX, pady=(14, 0), sticky="w")
+        self.input_file_button = ctk.CTkButton(
+            _if_frame, text="Select .txt File", command=self.select_input_file, width=250)
+        self.input_file_button.grid(row=0, column=0, sticky="w")
+        self.input_file_label = ctk.CTkLabel(
+            _if_frame, text="", text_color="gray", anchor="w")
+        self.input_file_label.grid(row=1, column=0, sticky="w")
+
+        # Row 5: Lexicon Database (Anagrams/Definitions only — gridded/removed in on_deck_type_change)
+        self.db_file_label_widget = ctk.CTkLabel(self, text="Lexicon database:", anchor="w")
+        self._db_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.db_file_button = ctk.CTkButton(
+            self._db_frame, text="Select .db File", command=self.select_db_file, width=250)
+        self.db_file_button.grid(row=0, column=0, sticky="w")
+        self.db_file_path_display = ctk.CTkLabel(
+            self._db_frame, text="", text_color="gray", anchor="w")
+        self.db_file_path_display.grid(row=1, column=0, sticky="w")
+
+        # Row 6: Save Folder
+        ctk.CTkLabel(self, text="Save folder:", anchor="w").grid(
+            row=6, column=0, padx=LABEL_PADX, pady=(2, 0), sticky="nw")
+        _sf_frame = ctk.CTkFrame(self, fg_color="transparent")
+        _sf_frame.grid(row=6, column=1, padx=WIDGET_PADX, pady=(2, 0), sticky="w")
+        self.save_folder_button = ctk.CTkButton(
+            _sf_frame, text="Choose Folder", command=self.select_save_folder, width=250)
+        self.save_folder_button.grid(row=0, column=0, sticky="w")
         self.save_folder_label = ctk.CTkLabel(
-            self, 
-            text=self.folder_name_display(), text_color="gray", anchor="w", wraplength=365,  # Set wrap width (pixels)
-            justify="left"   
-        ) # Align multi-line text to the left
-        self.save_folder_label.pack(padx=20, pady=(7, 5), fill="x")
+            _sf_frame, text=self.folder_name_display(),
+            text_color="gray", anchor="w", wraplength=390, justify="left")
+        self.save_folder_label.grid(row=1, column=0, sticky="w", pady=(4, 0))
 
-        # Output format
-        ctk.CTkLabel(self, text="Output format:", anchor="w").pack(padx=20, pady=(15, 0), fill="x")
+        # Row 7: Output Format
+        ctk.CTkLabel(self, text="Output format:", anchor="w").grid(
+            row=7, column=0, padx=LABEL_PADX, pady=(20, 4), sticky="w")
         self.format_menu = ctk.CTkOptionMenu(
-            self,
-            values=["APKG (Anki deck)", "CSV", "Both"],
-            variable=self.output_format_var
-        )
-        self.format_menu.pack(padx=20, fill="x")
+            self, values=["APKG (Anki deck)", "CSV", "Both"],
+            variable=self.output_format_var, width=250, anchor="center")
+        self.format_menu.grid(row=7, column=1, padx=WIDGET_PADX, pady=(20, 4), sticky="w")
 
+        # Row 8: Create Deck — centered across both columns
+        self.create_button = ctk.CTkButton(self, text="Create Deck", command=self.create_deck, width=180)
+        self.create_button.grid(row=8, column=0, columnspan=2, pady=(30, 8))
 
-        # Create Deck
-        self.create_button = ctk.CTkButton(self, text="Create Deck", command=self.create_deck)
-        self.create_button.pack(padx=50, pady=(45, 15), fill="x")
-
-        # Status
+        # Row 9: Status (spans both columns)
         self.status_label = ctk.CTkLabel(
-            self, 
-            textvariable=self.status_text, 
-            text_color="white", 
-            wraplength=360, 
-            justify="left"
-        )
-        self.status_label.pack(padx=20, fill="x")
+            self, textvariable=self.status_text,
+            text_color="white", wraplength=560, justify="left")
+        self.status_label.grid(row=9, column=0, columnspan=2, padx=15, pady=(0, 10), sticky="ew")
 
-        # Checkbox for CSS
-        self.anagrams_css_checkbox = ctk.CTkCheckBox(self.css_checkbox_frame, text="Color-code answers by number of anagrams", variable=self.use_anagrams_css_var)
-        self.leaves_css_checkbox = ctk.CTkCheckBox(self.css_checkbox_frame, text="Color-code questions by leave value range", variable=self.use_leaves_css_var)
-        self.defs_css_checkbox = ctk.CTkCheckBox(self.css_checkbox_frame, text="Color-code definitions by part of speech", variable=self.use_defs_css_var)
-
-        # Hide DB widgets initially if not needed
-        self.db_file_label_widget.pack_forget()
-        self.db_file_button.pack_forget()
-        self.db_file_path_display.pack_forget()
-
-
-        # Since Anagrams is the default, show the DB file selector
+        # Trigger initial state for Anagrams
         self.on_deck_type_change("Anagrams")
 
 
@@ -250,36 +295,49 @@ class AnkiDeckBuilder(ctk.CTk):
             save_last_folder(self.last_input_dir, key="input")
 
     def on_deck_type_change(self, selected_type):
+        deck_type = selected_type.lower()
 
-        for widget in self.css_checkbox_frame.winfo_children():
-            widget.pack_forget()
+        # ── Checkboxes (col 1 frame) ──────────────────────────────────────────
+        for checkbox_widget in self.css_checkbox_frame.winfo_children():
+            checkbox_widget.pack_forget()
 
-        # Show only the relevant one
-        if selected_type.lower() == "anagrams":
+        if deck_type == "anagrams":
             self.anagrams_css_checkbox.pack(anchor="w")
-        elif selected_type.lower() == "definitions":
+            self._lex_sym_row.pack(anchor="w", pady=(4, 0))
+        elif deck_type == "definitions":
             self.defs_css_checkbox.pack(anchor="w")
-        elif selected_type.lower() == "leaves":
+        elif deck_type == "leaves":
             self.leaves_css_checkbox.pack(anchor="w")
-        
-        if selected_type.lower() in ["anagrams", "definitions"]:
-            self.db_file_label_widget.pack(padx=20, fill="x", before=self.save_folder_label_widget)
-            self.db_file_button.pack(padx=20, fill="x", before=self.save_folder_label_widget)
-            self.db_file_path_display.pack(padx=20, pady=(0,7), fill="x", before=self.save_folder_label_widget)
-        else:
-            self.db_file_label_widget.pack_forget()
-            self.db_file_button.pack_forget()
-            self.db_file_path_display.pack_forget()
 
-            self.db_path_var.set("")  # Clear the stored DB path
+        # ── Tile order row (Anagrams only) ────────────────────────────────────
+        if deck_type == "anagrams":
+            self.tile_order_label.grid(row=3, column=0, padx=(15, 8), pady=(20, 15), sticky="w")
+            self.tile_order_menu.grid(row=3, column=1, padx=(0, 15), pady=(20, 15), sticky="w")
+        else:
+            self.tile_order_label.grid_remove()
+            self.tile_order_menu.grid_remove()
+
+        # ── Input file button label ───────────────────────────────────────────
+        if deck_type == "leaves":
+            self.input_file_button.configure(text="Select .csv / .jqz File")
+        else:
+            self.input_file_button.configure(text="Select .txt File")
+
+        # ── Lexicon DB row (Anagrams + Definitions only) ──────────────────────
+        if deck_type in ("anagrams", "definitions"):
+            self.db_file_label_widget.grid(row=5, column=0, padx=(15, 8), pady=2, sticky="nw")
+            self._db_frame.grid(row=5, column=1, padx=(0, 15), pady=2, sticky="ew")
+        else:
+            self.db_file_label_widget.grid_remove()
+            self._db_frame.grid_remove()
+            self.db_path_var.set("")
             self.db_file_path_display.configure(text="")
 
-        # Restrict output formats based on deck type
+        # ── Output formats ────────────────────────────────────────────────────
         formats = self._allowed_formats_for(selected_type)
         self.format_menu.configure(values=formats)
         if self.output_format_var.get() not in formats:
-            self.output_format_var.set(formats[0])  # snap to a valid choice
-
+            self.output_format_var.set(formats[0])
 
     def select_db_file(self):
         # Load the last used .db folder, fallback to current directory
@@ -340,8 +398,15 @@ class AnkiDeckBuilder(ctk.CTk):
                     messagebox.showerror("Missing Database", "Anagrams require a .db file.")
                     return
 
+                tile_order_map = {
+                    "Alphabetical": "alpha",
+                    "Consonant-first": "cons",
+                    "Vowel-first": "vow",
+                }
+                tile_order = tile_order_map.get(self.tile_order_var.get(), "alpha")
+
                 # Build the data once
-                cards = anagram_deck_builder.build_cards(self.input_file_path, db_path)
+                cards = anagram_deck_builder.build_cards(self.input_file_path, db_path, tile_order=tile_order, show_lexicon_symbols=self.show_lexicon_symbols_var.get())
 
                 # APKG?
                 if fmt in ("APKG (Anki deck)", "Both"):

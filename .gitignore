@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ignore build artifacts
 build/
 dist/
@@ -11,4 +12,18 @@ __pycache__/
 *.zip
 
 #Ignore claude
+=======
+# Ignore build artifacts
+build/
+dist/
+*.spec
+
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+
+# Ignore zip file
+*.zip
+
+>>>>>>> f0bc32ab7f82f47fd543abfa0cb3f279b2e87da6
 CLAUDE.md
