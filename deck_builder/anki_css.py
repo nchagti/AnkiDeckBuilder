@@ -1,13 +1,12 @@
 def default_anagrams_css():
     return """
   @font-face {
-        font-family: myfont;
-        src: url("_protiles.ttf");
-      }
+      font-family: myfont;
+      src: url("_protiles.ttf");
+    }
 
   /* ---------- Set up ---------- */
-  .card {
-    --rack-max-width: 600px;         
+  .card {        
     --tile-size: 40px;
     --tile-gap: 2px;
     --tile-radius: 4px;
@@ -29,35 +28,30 @@ def default_anagrams_css():
   a {
   text-decoration: none;
   display: block;
-  width: 100%;
   }
 
   /* ---- Rack container for when i get my shit together ---- */
   .rack {
-    position: relative;
-    max-width: var(--rack-max-width);
-    margin: 0 auto;
-    height: calc(var(--tile-size) * 0.9);
-    padding: 5px 5px;
-    padding-top: 5px;
-    padding-bottom: 3px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+      position: relative;
+      width: 100%;
+      height: calc(var(--tile-size) * 1.2);
+      padding-top: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
 
-  /* ---------- Tile row ---------- */
-  .tiles {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    gap: var(--tile-gap);
-  }
+    /* ---------- Tile row ---------- */
+    .tiles {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      gap: var(--tile-gap);
+    }
 
   /* ---------- Individual tile ---------- */
   .tile {
-    position: relative;
     width: calc(var(--tile-size) * 1.1);
     height: calc(var(--tile-size) * 1.1);
     border-radius: var(--tile-radius);
@@ -113,13 +107,18 @@ def default_anagrams_css():
 
   /* ---------- Buttons ---------- */
   .controls {
+    width: 100%; 
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    width: 100%;
     gap: 0.6em;
     margin-top: 0.5em;
+  }
+
+
+  .rack, .controls {
+  box-sizing: border-box;
   }
 
   .ctrl-btn {
@@ -175,7 +174,6 @@ def default_anagrams_css():
     border-top: 3px solid rgba(180, 150, 255, 0.35);
     transform: translateY(-12px);
   }
-
   .nightMode .tile.hint-active {
     box-shadow:
       0 4px 10px var(--tile-shadow),
@@ -187,6 +185,7 @@ def default_anagrams_css():
     border-top: 3px solid rgba(155, 107, 194, 0.35);
     transform: translateY(-12px);
   }
+
     /* ----- Back of card ----- */
 
     .entry-table {
