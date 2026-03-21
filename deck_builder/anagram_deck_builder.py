@@ -90,6 +90,7 @@ def bucketed_tags(tags, length, label, order, bucket_sizes=(500, 1000, 5000, 100
         tags.add(f"len{length}::{label}::{start}-{end}")
 
 def build_front_html(sorted_alphagram, alphagram, first_word):
+    """attempting to make cool tiles that you can click on to go to the word's Neighborhood page """
     spans = "".join(f"<span class='tile'><span class='letter'>{c}</span></span>" for c in sorted_alphagram)
     return (
         f"<a class='alphalink' "
@@ -113,59 +114,95 @@ def build_front_html(sorted_alphagram, alphagram, first_word):
         f"</svg></button>"
         f"<span class='hint-display' id='hintDisplay'></span>"
         f"</div>"
-        f"<script>"
-        f"(function () {{"
-        f"var container = document.querySelector('.tiles');"
-        f"var originalOrder = container ? Array.from(container.children) : [];"
-        f"function shuffleTiles() {{"
-        f"if (!container) return;"
-        f"var tiles = Array.from(container.children);"
-        f"for (var i = tiles.length - 1; i > 0; i--) {{"
-        f"var j = Math.floor(Math.random() * (i + 1));"
-        f"container.appendChild(tiles[j]);"
-        f"tiles[j] = tiles[i];"
-        f"}}}}"
-        f"window.shuffleTiles = shuffleTiles;"
-        f"function resetTiles() {{"
-        f"if (!container) return;"
-        f"originalOrder.forEach(function (tile) {{ container.appendChild(tile); }});"
-        f"}}"
-        f"window.resetTiles = resetTiles;"
-        f"var raw = '{{{{Anagrams}}}}';"
-        f"var words = raw.split(',')"
-        f".map(function (w) {{ return w.trim().toUpperCase(); }})"
-        f".filter(function (w) {{ return w.length > 0; }});"
-        f"var firstLetters = words.map(function (w) {{ return w[0]; }});"
-        f"var hintIndex = -1;"
-        f"var FLASH_MS = 120;"
-        f"function clearHints() {{"
-        f"Array.from(container.children).forEach(function (tile) {{"
-        f"tile.classList.remove('hint-active');"
-        f"}});}}"
-        f"function setHint(index) {{"
-        f"clearHints();"
-        f"var letter = firstLetters[index];"
-        f"var found = false;"
-        f"Array.from(container.children).forEach(function (tile) {{"
-        f"if (found) return;"
-        f"var el = tile.querySelector('.letter');"
-        f"if (el && el.textContent.trim()[0] === letter) {{"
-        f"tile.classList.add('hint-active');"
-        f"found = true;"
-        f"}}}});}}"
-        f"function nextHint() {{"
-        f"if (firstLetters.length === 0) return;"
-        f"var nextIndex = (hintIndex + 1) % (firstLetters.length + 1);"
-        f"if (nextIndex === firstLetters.length) {{ hintIndex = nextIndex; clearHints(); return; }}"
-        f"var sameAsPrev = hintIndex >= 0 && hintIndex < firstLetters.length && firstLetters[nextIndex] === firstLetters[hintIndex];"
-        f"hintIndex = nextIndex;"
-        f"if (sameAsPrev) {{ clearHints(); setTimeout(function () {{ setHint(hintIndex); }}, FLASH_MS); }}"
-        f"else {{ setHint(hintIndex); }}"
-        f"}}"
-        f"window.nextHint = nextHint;"
-        f"}})();"
-        f"</script>"
     )
+
+def buttons_javascript():
+    return """
+    <script>
+    (function () {
+    var container = document.querySelector('.tiles');
+    var originalOrder = container ? Array.from(container.children) : [];
+
+    function shuffleTiles() {
+        if (!container) return;
+        var tiles = Array.from(container.children);
+        for (var i = tiles.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        container.appendChild(tiles[j]);
+        tiles[j] = tiles[i];
+        }
+    }
+    window.shuffleTiles = shuffleTiles;
+
+    function resetTiles() {
+        if (!container) return;
+        originalOrder.forEach(function (tile) {
+        container.appendChild(tile);
+        });
+    }
+    window.resetTiles = resetTiles;
+
+    var raw = "{{Anagrams}}";
+    var words = raw.split(',')
+        .map(function (w) { return w.trim().toUpperCase(); })
+        .filter(function (w) { return w.length > 0; })
+        .sort();
+
+    var firstLetters = words.map(function (w) { return w[0]; });
+    var hintIndex = -1;
+
+    var FLASH_MS = 120;
+
+    function clearHints() {
+    Array.from(container.children).forEach(function (tile) {
+        tile.classList.remove('hint-active');
+    });
+    }
+
+    function setHint(index) {
+    clearHints();
+    var letter = firstLetters[index];
+    var found = false;
+    Array.from(container.children).forEach(function (tile) {
+        if (found) return;
+        var el = tile.querySelector('.letter');
+        if (el && el.textContent.trim()[0] === letter) {
+        tile.classList.add('hint-active');
+        found = true;
+        }
+    });
+    }
+
+    function nextHint() {
+    if (firstLetters.length === 0) return;
+
+    var nextIndex = (hintIndex + 1) % (firstLetters.length + 1);
+
+    // Step lands on "clear" state
+    if (nextIndex === firstLetters.length) {
+        hintIndex = nextIndex;
+        clearHints();
+        return;
+    }
+
+    // Same letter as previous — flash to purple first so the change is visible
+    var sameAsPrev = hintIndex >= 0
+        && hintIndex < firstLetters.length
+        && firstLetters[nextIndex] === firstLetters[hintIndex];
+
+    hintIndex = nextIndex;
+
+    if (sameAsPrev) {
+        clearHints();
+        setTimeout(function () { setHint(hintIndex); }, FLASH_MS);
+    } else {
+        setHint(hintIndex);
+    }
+    }
+    window.nextHint = nextHint;
+    })();
+    </script>
+"""
 
 def _back_html_from_data(data: dict) -> str:
     return "<div class='entry-table'>" + "\n".join(data["entries"]) + "</div>"
@@ -461,7 +498,7 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
 
         templates=[{
             'name': 'Card 1',
-            'qfmt': '{{FrontHTML}}',
+            'qfmt': '{{FrontHTML}}' + buttons_javascript(),
             'afmt': '{{FrontSide}}<hr id="answer"><div class="{{Tags}}">{{Back}}</div>',
         }],
         css= (
