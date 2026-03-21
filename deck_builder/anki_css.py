@@ -1,6 +1,6 @@
 def default_anagrams_css():
     return """
-    @font-face {
+  @font-face {
         font-family: myfont;
         src: url("_protiles.ttf");
       }
@@ -10,78 +10,183 @@ def default_anagrams_css():
     --rack-max-width: 600px;         
     --tile-size: 40px;
     --tile-gap: 2px;
-    --tile-radius: 5px;
+    --tile-radius: 4px;
 
-      /* Dark tiles */
-      --tile-face: #15083b;
-      --tile-edge: #09021c;
-      --tile-text: #f7f7f7;
-      --tile-shadow: rgba(21,8,59,0.35);
-    }
+    --tile-face: #441b82;
+    --tile-edge: #280f4d;
+    --tile-text: #f7f7f7;
+    --tile-shadow: rgba(22, 7, 43, 0.25);
+  }
 
-    a {
-      text-decoration: none;
-      }
+  .nightMode.card {
+    /* Dark tiles */
+    --tile-face: #381754;
+    --tile-edge: #250f38;
+    --tile-text: #f7f7f7;
+    --tile-shadow: rgba(21,5,33,0.35);
+  }
 
-    /* ---------- Rack container for when i get myself together ---------- */
-    .rack {
-      position: relative;
-      max-width: var(--rack-max-width);
-      margin: 0 auto;
-      height: calc(var(--tile-size) * 1);
-      padding: 5px 5px;
-      padding-top: 5px;
-      padding-bottom: 3px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+  a {
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  }
+
+  /* ---- Rack container for when i get my shit together ---- */
+  .rack {
+    position: relative;
+    max-width: var(--rack-max-width);
+    margin: 0 auto;
+    height: calc(var(--tile-size) * 0.9);
+    padding: 5px 5px;
+    padding-top: 5px;
+    padding-bottom: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
 
-    /* ---------- Tile row ---------- */
-    .tiles {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      gap: var(--tile-gap);
-    }
+  /* ---------- Tile row ---------- */
+  .tiles {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: var(--tile-gap);
+  }
 
-    /* ---------- Individual tile ---------- */
-    .tile {
-      position: relative;
-      width: calc(var(--tile-size) * 1.1);
-      height: calc(var(--tile-size) * 1.1);
-      border-radius: var(--tile-radius);
+  /* ---------- Individual tile ---------- */
+  .tile {
+    position: relative;
+    width: calc(var(--tile-size) * 1.1);
+    height: calc(var(--tile-size) * 1.1);
+    border-radius: var(--tile-radius);
 
-      display: grid;
-      place-items: center;
-                
-      font-family: myfont;
-      font-size: calc(var(--tile-size) * 1);
-      line-height: 1;
-      color: var(--tile-text);
-      letter-spacing: 0em ;
+    display: grid;
+    place-items: center;
+              
+    font-family: myfont;
+    font-size: calc(var(--tile-size) * 1);
+    line-height: 1;
+    color: var(--tile-text);
+    letter-spacing: 0em ;
 
-      background:
-        linear-gradient(to right, 
-          var(--tile-edge) 0%, 
-          var(--tile-face) 12%, 
-          var(--tile-face) 88%, 
-          var(--tile-edge) 100%);
+    background:
+    linear-gradient(to bottom,
+      rgba(255,255,255,0.05) 0%,
+      rgba(255,255,255,0.0) 30%,
+      var(--tile-face) 30%),
+    var(--tile-face);
 
-      box-shadow:
-        0 6px 10px var(--tile-shadow),
-        inset 0 1px 0 rgba(229,219,255,0.15),
-        inset 0 -1px 0 rgba(11,4,33,0.25);
+  box-shadow:
+    0 4px 6px var(--tile-shadow),
+    inset 0 1px 0 rgba(249, 245, 252, 0.2),
+    inset 0px -1px 0px rgba(20, 5, 40, 0.3),
+    inset 1px 0px 1px 0px rgba(243, 235, 240, 0.2),
+    inset -1px 0px 1px 0px rgba(243, 235, 240, 0.2);
+    
+    border-top: 3px solid rgba(180, 150, 255, 0.35);
+  }
 
-      border-bottom: 3px solid var(--tile-edge);
-      }
+  .nightMode .tile {
+    background:
+    linear-gradient(to bottom,
+      rgba(240,240,240,0.05) 0%,
+      rgba(240,240,240,0.0) 30%,
+      var(--tile-face) 30%),
+    var(--tile-face);
 
-    .letter {
-    padding-top: 6px;
-    padding-left: 6px;
-    }  
+    box-shadow:
+      0 4px 6px var(--tile-shadow),
+      inset 0 1px 0 rgba(240, 225, 252, 0.2),
+      inset 0px -1px 0px rgba(22, 5, 36, 0.3),
+      inset 1px 0px 1px 0px rgba(183, 157, 204, 0.2),
+      inset -1px 0px 1px 0px rgba(183, 157, 204, 0.2);
 
+    border-top: 3px solid rgba(155, 107, 194, 0.35);
+  }
+
+  .letter {
+    padding-top: 5px;
+    padding-left: 5px;
+  }
+
+  /* ---------- Buttons ---------- */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    gap: 0.6em;
+    margin-top: 0.5em;
+  }
+
+  .ctrl-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--tile-size) * 0.95);
+    height: calc(var(--tile-size) * 0.95);
+    border-radius: 6px;
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.08);
+    color: #555;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    padding: 0;
+  }
+
+  .ctrl-btn svg {
+    width: calc(var(--tile-size) * 0.45);
+    height: calc(var(--tile-size) * 0.45);
+  }
+
+  .ctrl-btn:hover {
+    background: rgba(0, 0, 0, 0.14);
+    border-color: rgba(0, 0, 0, 0.3);
+    color: #222;
+  }
+
+  .nightMode .ctrl-btn {
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ccc;
+  }
+
+  .nightMode .ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #fff;
+  }
+
+  .ctrl-btn:active {
+    transform: scale(0.92);
+  }
+
+  .tile.hint-active {
+    box-shadow:
+      0 4px 6px var(--tile-shadow),
+      inset 0 1px 0 rgba(249, 245, 252, 0.2),
+      inset 0px -1px 0px rgba(20, 5, 40, 0.3),
+      inset 1px 0px 1px 0px rgba(243, 235, 240, 0.2),
+      inset -1px 0px 1px 0px rgba(243, 235, 240, 0.2);
+    
+    border-top: 3px solid rgba(180, 150, 255, 0.35);
+    transform: translateY(-12px);
+  }
+
+  .nightMode .tile.hint-active {
+    box-shadow:
+      0 4px 10px var(--tile-shadow),
+      inset 0 1px 0 rgba(240, 225, 252, 0.2), /* the tiny strip of light between the top edge and the tile face */
+      inset 0px -1px 0px rgba(22, 5, 36, 0.3), /* inner shadow at the bottom */
+      inset 1px 0px 1px 0px rgba(183, 157, 204, 0.2), /* light on the left */
+      inset -1px 0px 1px 0px rgba(183, 157, 204, 0.2); /*light on the right */
+
+    border-top: 3px solid rgba(155, 107, 194, 0.35);
+    transform: translateY(-12px);
+  }
     /* ----- Back of card ----- */
 
     .entry-table {
