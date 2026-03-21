@@ -101,6 +101,115 @@ def build_front_html(sorted_alphagram, alphagram, first_word):
         f"</a>"
     )
 
+def control_buttons():
+    return """
+    <div class="controls">
+    <button class="ctrl-btn" id="shuffleBtn" onclick="shuffleTiles()" title="Shuffle">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
+        <path d="M403.8 34.4c12-5 25.7-2.2 34.9 6.9l64 64c6 6 9.4 14.1 9.4 22.6s-3.4 16.6-9.4 22.6l-64 64c-9.2 9.2-22.9 11.9-34.9 6.9S384 204.9 384 192l0-32-32 0c-10.1 0-19.6 4.7-25.6 12.8l-32.4 43.2-40-53.3 21.2-28.3C293.3 110.2 321.8 96 352 96l32 0 0-32c0-12.9 7.8-24.6 19.8-29.6zM154 296l40 53.3-21.2 28.3C154.7 401.8 126.2 416 96 416l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64 0c10.1 0 19.6-4.7 25.6-12.8L154 296zM438.6 470.6c-9.2 9.2-22.9 11.9-34.9 6.9S384 460.9 384 448l0-32-32 0c-30.2 0-58.7-14.2-76.8-38.4L121.6 172.8c-6-8.1-15.5-12.8-25.6-12.8l-64 0c-17.7 0-32-14.3-32-32S14.3 96 32 96l64 0c30.2 0 58.7 14.2 76.8 38.4L326.4 339.2c6 8.1 15.5 12.8 25.6 12.8l32 0 0-32c0-12.9 7.8-24.6 19.8-29.6s25.7-2.2 34.9 6.9l64 64c6 6 9.4 14.1 9.4 22.6s-3.4 16.6-9.4 22.6l-64 64z"></path>
+        </svg>
+    </button>
+
+    <button class="ctrl-btn" id="resetBtn" onclick="resetTiles()" title="Reset">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor">
+        <path d="M297.4 566.6C309.9 579.1 330.2 579.1 342.7 566.6L502.7 406.6C515.2 394.1 515.2 373.8 502.7 361.3C490.2 348.8 469.9 348.8 457.4 361.3L352 466.7L352 96C352 78.3 337.7 64 320 64C302.3 64 288 78.3 288 96L288 466.7L182.6 361.3C170.1 348.8 149.8 348.8 137.3 361.3C124.8 373.8 124.8 394.1 137.3 406.6L297.3 566.6z"></path>
+        </svg>
+    </button>
+
+    <button class="ctrl-btn" id="hintBtn" onclick="nextHint()" title="Hint">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor">
+        <path d="M424.5 355.1C449 329.2 464 294.4 464 256C464 176.5 399.5 112 320 112C240.5 112 176 176.5 176 256C176 294.4 191 329.2 215.5 355.1C236.8 377.5 260.4 409.1 268.8 448L371.2 448C379.6 409 403.2 377.5 424.5 355.1zM459.3 388.1C435.7 413 416 443.4 416 477.7L416 496C416 540.2 380.2 576 336 576L304 576C259.8 576 224 540.2 224 496L224 477.7C224 443.4 204.3 413 180.7 388.1C148 353.7 128 307.2 128 256C128 150 214 64 320 64C426 64 512 150 512 256C512 307.2 492 353.7 459.3 388.1zM272 248C272 261.3 261.3 272 248 272C234.7 272 224 261.3 224 248C224 199.4 263.4 160 312 160C325.3 160 336 170.7 336 184C336 197.3 325.3 208 312 208C289.9 208 272 225.9 272 248z"></path>
+        </svg>
+    </button>
+    <span class="hint-display" id="hintDisplay"></span>
+    </div>
+
+    <script>
+    (function () {
+    var container = document.querySelector('.tiles');
+    var originalOrder = container ? Array.from(container.children) : [];
+
+    function shuffleTiles() {
+        if (!container) return;
+        var tiles = Array.from(container.children);
+        for (var i = tiles.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        container.appendChild(tiles[j]);
+        tiles[j] = tiles[i];
+        }
+    }
+    window.shuffleTiles = shuffleTiles;
+
+    function resetTiles() {
+        if (!container) return;
+        originalOrder.forEach(function (tile) {
+        container.appendChild(tile);
+        });
+    }
+    window.resetTiles = resetTiles;
+
+    var raw = "{{Anagrams}}";
+    var words = raw.split(',')
+        .map(function (w) { return w.trim().toUpperCase(); })
+        .filter(function (w) { return w.length > 0; })
+        .sort();
+
+    var firstLetters = words.map(function (w) { return w[0]; });
+    var hintIndex = -1;
+
+    var FLASH_MS = 120;
+
+    function clearHints() {
+    Array.from(container.children).forEach(function (tile) {
+        tile.classList.remove('hint-active');
+    });
+    }
+
+    function setHint(index) {
+    clearHints();
+    var letter = firstLetters[index];
+    var found = false;
+    Array.from(container.children).forEach(function (tile) {
+        if (found) return;
+        var el = tile.querySelector('.letter');
+        if (el && el.textContent.trim()[0] === letter) {
+        tile.classList.add('hint-active');
+        found = true;
+        }
+    });
+    }
+
+    function nextHint() {
+    if (firstLetters.length === 0) return;
+
+    var nextIndex = (hintIndex + 1) % (firstLetters.length + 1);
+
+    // Step lands on "clear" state
+    if (nextIndex === firstLetters.length) {
+        hintIndex = nextIndex;
+        clearHints();
+        return;
+    }
+
+    // Same letter as previous — flash to purple first so the change is visible
+    var sameAsPrev = hintIndex >= 0
+        && hintIndex < firstLetters.length
+        && firstLetters[nextIndex] === firstLetters[hintIndex];
+
+    hintIndex = nextIndex;
+
+    if (sameAsPrev) {
+        clearHints();
+        setTimeout(function () { setHint(hintIndex); }, FLASH_MS);
+    } else {
+        setHint(hintIndex);
+    }
+    }
+    window.nextHint = nextHint;
+    })();
+    </script>
+"""
+
 def _back_html_from_data(data: dict) -> str:
     return "<div class='entry-table'>" + "\n".join(data["entries"]) + "</div>"
 
@@ -395,7 +504,7 @@ def create_anki_deck(cards_dict, deck_name, save_folder=None, use_custom_css=Fal
 
         templates=[{
             'name': 'Card 1',
-            'qfmt': '{{FrontHTML}}',
+            'qfmt': '{{FrontHTML}}' + control_buttons(),
             'afmt': '{{FrontSide}}<hr id="answer"><div class="{{Tags}}">{{Back}}</div>',
         }],
         css= (
