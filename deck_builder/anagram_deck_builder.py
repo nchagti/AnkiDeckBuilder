@@ -206,6 +206,15 @@ def control_buttons():
     }
     }
     window.nextHint = nextHint;
+
+    document.addEventListener('keydown', function(e) {
+    switch(e.key) {
+    case 'j': shuffleTiles(); break;
+    case 'k': resetTiles(); break;
+    case 'l': nextHint(); break;
+    }
+    });
+
     })();
     </script>
 """
