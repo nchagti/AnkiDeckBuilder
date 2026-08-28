@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 migrate_zyzzyva_to_anki.py
 
 Migrates Zyzzyva/Xerafin Leitner cardbox stats from Anagrams.db into
